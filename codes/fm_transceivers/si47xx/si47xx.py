@@ -33,6 +33,9 @@ class Si47xx(Device):
                              10.03 : 51, 8.97: 57, 7.99: 64, 7.01: 73, 6.02: 85, 5.01: 102, 4.02: 127, 3: 170, 2: 255,
                              1     : 510, 0.5: 1000, 0.25: 2000}
 
+    DIGITAL_MODES = {'default': 0, 'I2S': 1, 'Left_Justified_I2S': 7, 'MSB_at_1st_DCLK': 13, 'MSB_at_2nd_DCLK': 9}
+    DIGITAL_AUDIO_SAMPLE_PRECISION = {16: 0, 20: 1, 24: 2, 8: 3}
+
 
     def __init__(self, bus, pin_reset, i2c_address = I2C_ADDRESS,
                  freq = FREQ_DEFAULT, tx_power = 115, capacitance = 0,
@@ -66,7 +69,7 @@ class Si47xx(Device):
         self.power_up()
 
         # Configuration
-        self._set_property_by_name('GPO_IEN', 0x00C1)  # sources for the GPO2/INT interrupt pin
+        self._set_property_by_name('GPO_IEN', 0x00C7)  # sources for the GPO2/INT interrupt pin
         self._set_property_by_name('REFCLK_FREQ', self.FREQ_REF)  # frequency of the REFCLK
         self.mute_line_input(False)
         self._set_pre_emphasis(pre_emphasis_us = 75)
@@ -159,6 +162,24 @@ class Si47xx(Device):
         self._send_command(command)
 
         time.sleep(0.2)  # need 110ms to power up.
+
+
+    def power_up_digital_mode(self, *args, **kwargs):
+        self.power_up(analog_audio_inputs = False, *args, **kwargs)
+
+
+    def _set_digital_input(self, digital_mode = 'I2S', sample_on_dclk_falling_edge = False,
+                           digital_audio_sample_bits = 16, sample_rate = 48000, mono_audio_mode = False):
+
+        assert sample_rate == 0 or 32000 <= sample_rate <= 48000
+        self._set_property_by_name('DIGITAL_INPUT_SAMPLE_RATE', sample_rate)
+
+        property = self.map.registers['DIGITAL_INPUT_FORMAT']
+        property.elements['IFALL'].value = int(sample_on_dclk_falling_edge)
+        property.elements['IMODE'].value = self.DIGITAL_MODES[digital_mode]
+        property.elements['IMONO'].value = int(mono_audio_mode)
+        property.elements['ISIZE'].value = self.DIGITAL_AUDIO_SAMPLE_PRECISION[digital_audio_sample_bits]
+        self._set_property(property)
 
 
     def power_down(self):

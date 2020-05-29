@@ -19,7 +19,7 @@ class Si47xx(Device):
 
     FREQ_REF = 32768
     FREQ_UNIT = int(10e3)
-    FREQ_MIN = int(87.5e6)
+    FREQ_MIN = int(76e6)
     FREQ_MAX = int(108e6)
     FREQ_STEP = int(50e3)
 
@@ -39,6 +39,7 @@ class Si47xx(Device):
 
     def __init__(self, bus, pin_reset, i2c_address = I2C_ADDRESS,
                  freq = FREQ_DEFAULT, tx_power = 115, capacitance = 0,
+                 pre_emphasis_us = 75,
                  registers_map = None, registers_values = None,
                  command_set = None,
                  timeout_seconds = 0.2):
@@ -55,6 +56,8 @@ class Si47xx(Device):
         self._tx_power = tx_power
         self._capacitance = capacitance  # 0 as auto
 
+        self._pre_emphasis_us = pre_emphasis_us
+
         self._command_set = _get_commands() if command_set is None else command_set
         self._status = status
         self._timeout_seconds = timeout_seconds
@@ -64,6 +67,7 @@ class Si47xx(Device):
     def init(self):
         self._action = 'init'
         self._assert_reset()
+        self.map.reset()
 
         # Powerup in Analog Mode
         self.power_up()
@@ -72,7 +76,7 @@ class Si47xx(Device):
         self._set_property_by_name('GPO_IEN', 0x00C7)  # sources for the GPO2/INT interrupt pin
         self._set_property_by_name('REFCLK_FREQ', self.FREQ_REF)  # frequency of the REFCLK
         self.mute_line_input(False)
-        self._set_pre_emphasis(pre_emphasis_us = 75)
+        self._set_pre_emphasis(pre_emphasis_us = self._pre_emphasis_us)
         self._set_audio_frequency_deviation(deviation_Hz = 66.25e3)
 
         # Tuning
@@ -95,10 +99,17 @@ class Si47xx(Device):
 
 
     def _assert_reset(self):
-        self._pin_reset.high()
-        self._pin_reset.low()
-        time.sleep(0.01)
-        self._pin_reset.high()
+        if not self.is_virtual_device:
+            self._pin_reset.high()
+            time.sleep(0.01)
+            self._pin_reset.low()
+            time.sleep(0.01)
+            self._pin_reset.high()
+
+
+    @property
+    def is_virtual_device(self):
+        return self._bus.is_virtual_device
 
 
     @property
@@ -128,20 +139,22 @@ class Si47xx(Device):
 
 
     def _wait_for_CTS(self):
-        start = time.time()
-        while not self._is_clear_to_send:
-            if time.time() - start > self._timeout_seconds:
-                raise RuntimeError("Timeout.")
+        if not self.is_virtual_device:
+            start = time.time()
+            while not self._is_clear_to_send:
+                if time.time() - start > self._timeout_seconds:
+                    raise RuntimeError("Timeout.")
 
 
     def _wait_for_tune_completed(self):
-        start = time.time()
-        while not self._tune_completed:
-            time.sleep(0.01)
-            if time.time() - start > self._timeout_seconds:
-                raise RuntimeError("Timeout.")
+        if not self.is_virtual_device:
+            start = time.time()
+            while not self._tune_completed:
+                time.sleep(0.01)
+                if time.time() - start > self._timeout_seconds:
+                    raise RuntimeError("Timeout.")
 
-        self._clear_STCINT()
+            self._clear_STCINT()
 
 
     def power_up(self,
@@ -312,12 +325,12 @@ class Si47xx(Device):
         self._send_command(command)
 
 
-    def set_rds_ps(self, station):
+    def set_rds_ps(self, station_name):
         len_max = 96
-        length = len(station)
+        length = len(station_name)
         assert length <= len_max
 
-        buffer = (station + ' ' * (len_max - length)).encode()
+        buffer = (station_name + ' ' * (len_max - length)).encode()
 
         for i in range(0, len_max, 4):
             command = self.commands['TX_RDS_PS']
@@ -331,12 +344,12 @@ class Si47xx(Device):
             self._send_command(command)
 
 
-    def set_rds_buffer(self, message, use_FIFO = False, load_rds_group_buffer = True, clear_RDSINT = False):
+    def set_rds_buffer(self, radio_text, use_FIFO = False, load_rds_group_buffer = True, clear_RDSINT = False):
         len_max = 104
-        length = len(message)
+        length = len(radio_text)
         assert length <= len_max
 
-        buffer = (message + ' ' * (len_max - length)).encode()
+        buffer = (radio_text + ' ' * (len_max - length)).encode()
 
         for i in range(0, len_max, 4):
             command = self.commands['TX_RDS_BUFF']
@@ -355,14 +368,15 @@ class Si47xx(Device):
             self._send_command(command)
 
 
-    def set_rds(self, program_id = 0x0000, station = None, message = None, pty_code = 4, rds_fifo_size = 0,
+    def set_rds(self, program_id = 0x0000, station_name = None, radio_text = None, program_type_code = 4,
+                rds_fifo_size = 0,
                 enable = True):
 
         self._set_property_element('RDS', int(enable))
         time.sleep(0.01)  # status: 0x84
 
         if enable:
-            assert 0 <= program_id << 2 ** 16 - 1
+            assert 0 <= program_id <= 2 ** 16 - 1
 
             self._set_audio_frequency_deviation(deviation_Hz = 66.25e3)
             self._set_property_by_name('TX_RDS_DEVIATION', 200)
@@ -370,16 +384,16 @@ class Si47xx(Device):
             self._set_property_by_name('TX_RDS_PI', program_id)
             self._set_property_by_name('TX_RDS_PS_MIX', 0x0003)
             self._set_property_by_name('TX_RDS_PS_MISC', 0x1808 & ~(1 << 12) | (int(self.stereo) << 12))
-            self._set_property_element('RDSPTY', pty_code)
+            self._set_property_element('RDSPTY', program_type_code)
             self._set_property_by_name('TX_RDS_PS_REPEAT_COUNT', 3)
             self._set_property_by_name('TX_RDS_PS_MESSAGE_COUNT', 1)
             self._set_property_by_name('TX_RDS_PS_AF', 0xE0E0)
             self._set_property_by_name('TX_RDS_FIFO_SIZE', rds_fifo_size)
 
-            if station is not None:
-                self.set_rds_ps(station)
-            if message is not None:
-                self.set_rds_buffer(message)
+            if station_name is not None:
+                self.set_rds_ps(station_name)
+            if radio_text is not None:
+                self.set_rds_buffer(radio_text)
 
 
     @property
@@ -657,7 +671,7 @@ class Si47xx(Device):
 
 
     def _write_byte(self, value):
-        return self._bus.write_byte(self._i2c_address, value)
+        return self._bus.write_bytes(self._i2c_address, bytes_array = array('B', [value]))
 
 
     def _read_bytes(self, n_bytes):
@@ -665,4 +679,4 @@ class Si47xx(Device):
 
 
     def _read_byte(self):
-        return self._bus.read_byte(self._i2c_address)
+        return self._bus.read_bytes(self._i2c_address, n_bytes = 1)[0]

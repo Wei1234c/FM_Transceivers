@@ -11,4 +11,5 @@ class Si4713(Si471x):
         super().init()
 
         # Configuration
-        assert self.part_number == 0x0D  # 0x0D = Si4713
+        if not self.is_virtual_device:
+            assert self.part_number == 0x0D  # 0x0D = Si4713

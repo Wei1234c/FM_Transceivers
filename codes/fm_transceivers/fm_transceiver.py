@@ -1,11 +1,13 @@
-import signal_generators.interfaces
-
+try:
+    from signal_generators import interfaces
+except:
+    import interfaces
 
 FREQ_DEFAULT = None
 
 
 
-class Device(signal_generators.interfaces.Device):
+class Device(interfaces.Device):
     FREQ_REF = None
 
 

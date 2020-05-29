@@ -10,7 +10,6 @@ from array import array
 FREQ_UNIT = int(10e3)
 FREQ_MIN = int(76e6)
 FREQ_MAX = int(108e6)
-FREQ_DEFAULT = 88.8e6
 
 
 
@@ -26,27 +25,32 @@ class Si4713_proxy:
                                 (8705, 65496), (8706, 2), (8707, 4), (8708, 15), (8709, 13), (8960, 7), (8961, 206),
                                 (8962, 10000), (8963, 236), (8964, 5000), (11264, 0), (11265, 0), (11266, 0),
                                 (11267, 0), (11268, 0), (11269, 0), (11270, 0), (11271, 0))
+    FREQ_DEFAULT = 88.8e6
+    POWER_DEFAULT = 115
 
 
     def __init__(self, bus, pin_reset, i2c_address = I2C_ADDRESS,
-                 freq = FREQ_DEFAULT, tx_power = 115):
+                 freq = FREQ_DEFAULT, tx_power = POWER_DEFAULT):
 
         self._bus = bus
         self._i2c_address = i2c_address
         self._pin_reset = pin_reset
 
-        self._frequency = freq
-        self._tx_power = tx_power
-
         self.init()
+
+        self.set_frequency(freq)
+        self.set_power(tx_power)
 
 
     def init(self):
         self.power_up()
         self.write_all_registers(self.DEFAULT_REGISTERS_VALUES)
+        self.set_frequency(self.FREQ_DEFAULT)
+        self.set_power(self.POWER_DEFAULT)
 
-        self.set_frequency(self._frequency)
-        self.set_power(self._tx_power)
+
+    def reset(self):
+        self.init()
 
 
     def power_up(self, analog_audio_inputs = True):

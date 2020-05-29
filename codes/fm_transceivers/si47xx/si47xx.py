@@ -3,7 +3,7 @@ try:
     from fm_transceivers.si47xx.command_property.registers_map import _get_registers_map, Register, Element
     from fm_transceivers.si47xx.command_property.commands import _get_commands, status
 except:
-    from interfaces import Device, FREQ_DEFAULT
+    from fm_transceiver import Device, FREQ_DEFAULT
     from registers_map import _get_registers_map, Register, Element
     from commands import _get_commands, status
 
@@ -35,6 +35,8 @@ class Si47xx(Device):
 
     DIGITAL_MODES = {'default': 0, 'I2S': 1, 'Left_Justified_I2S': 7, 'MSB_at_1st_DCLK': 13, 'MSB_at_2nd_DCLK': 9}
     DIGITAL_AUDIO_SAMPLE_PRECISION = {16: 0, 20: 1, 24: 2, 8: 3}
+
+    RDS_MIX_RATIOS = {0: 0, 12.5: 1, 25: 2, 50: 3, 75: 4, 87.5: 5, 100: 6}
 
 
     def __init__(self, bus, pin_reset, i2c_address = I2C_ADDRESS,
@@ -369,7 +371,7 @@ class Si47xx(Device):
 
 
     def set_rds(self, program_id = 0x0000, station_name = None, radio_text = None, program_type_code = 4,
-                rds_fifo_size = 0,
+                repeat_count = 3, message_count = 1, rds_mix_ratio = 50, rds_fifo_size = 0, deviation_Hz = 200,
                 enable = True):
 
         self._set_property_element('RDS', int(enable))
@@ -379,14 +381,14 @@ class Si47xx(Device):
             assert 0 <= program_id <= 2 ** 16 - 1
 
             self._set_audio_frequency_deviation(deviation_Hz = 66.25e3)
-            self._set_property_by_name('TX_RDS_DEVIATION', 200)
+            self._set_property_by_name('TX_RDS_DEVIATION', deviation_Hz)
             self._set_property_by_name('TX_RDS_INTERRUPT_SOURCE', 0x0001)
             self._set_property_by_name('TX_RDS_PI', program_id)
-            self._set_property_by_name('TX_RDS_PS_MIX', 0x0003)
+            self._set_property_by_name('TX_RDS_PS_MIX', self.RDS_MIX_RATIOS[rds_mix_ratio])
             self._set_property_by_name('TX_RDS_PS_MISC', 0x1808 & ~(1 << 12) | (int(self.stereo) << 12))
             self._set_property_element('RDSPTY', program_type_code)
-            self._set_property_by_name('TX_RDS_PS_REPEAT_COUNT', 3)
-            self._set_property_by_name('TX_RDS_PS_MESSAGE_COUNT', 1)
+            self._set_property_by_name('TX_RDS_PS_REPEAT_COUNT', repeat_count)
+            self._set_property_by_name('TX_RDS_PS_MESSAGE_COUNT', message_count)
             self._set_property_by_name('TX_RDS_PS_AF', 0xE0E0)
             self._set_property_by_name('TX_RDS_FIFO_SIZE', rds_fifo_size)
 

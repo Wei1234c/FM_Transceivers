@@ -1,6 +1,7 @@
 import fx2lp
 from fm_transceivers.si47xx import Si4713
 
+
 # can't use FTDI FT232H: we need I2C and a reset pin, however, FT232H doesn't support I2C and GPIO simultaneously.
 
 bus = fx2lp.I2C(as_400KHz = True)
@@ -13,6 +14,8 @@ si.set_rds(program_id = 0x0520,
            station_name = "Wei Lin",
            radio_text = "My Radio Station !",
            program_type_code = 4,
-           rds_fifo_size = 20)
+           repeat_count = 3, message_count = 1, rds_mix_ratio = 50,
+           rds_fifo_size = 20,
+           enable = True)
 
 print(si.frequency)

@@ -20,7 +20,7 @@ class Si4713_proxy:
                            8707, 8708, 8709, 8960, 8961, 8962, 8963, 8964, 11264, 11265, 11266, 11267, 11268, 11269,
                            11270, 11271]
 
-    DEFAULT_REGISTERS_VALUES = ((1, 199), (257, 0), (259, 0), (513, 32768), (514, 0), (8448, 3), (8449, 6625),
+    DEFAULT_REGISTERS_VALUES = ((1, 199), (257, 0), (259, 0), (513, 32768), (514, 1), (8448, 3), (8449, 6625),
                                 (8450, 675), (8451, 0), (8452, 190), (8453, 0), (8454, 0), (8455, 19000), (8704, 3),
                                 (8705, 65496), (8706, 2), (8707, 4), (8708, 15), (8709, 13), (8960, 7), (8961, 206),
                                 (8962, 10000), (8963, 236), (8964, 5000), (11264, 0), (11265, 0), (11266, 0),
@@ -30,7 +30,7 @@ class Si4713_proxy:
 
 
     def __init__(self, bus, pin_reset, i2c_address = I2C_ADDRESS,
-                 freq = FREQ_DEFAULT, tx_power = POWER_DEFAULT):
+                 freq = FREQ_DEFAULT, tx_power = POWER_DEFAULT, stereo = True):
 
         self._bus = bus
         self._i2c_address = i2c_address
@@ -40,6 +40,7 @@ class Si4713_proxy:
 
         self.set_frequency(freq)
         self.set_power(tx_power)
+        self.stereo = stereo
 
 
     def init(self):
@@ -113,6 +114,22 @@ class Si4713_proxy:
             self._write_bytes(array('B', [0x31, 0, 0, 0, 0]))
         else:
             self.set_power(self._tx_power)
+
+
+    def mute_line_input(self, value = True):
+        self.write_register(0x2105, 0x03 if value else 0x00)
+
+
+    @property
+    def stereo(self):
+        return (self.read_register(0x2100) & 0x03) == 0x03
+
+
+    @stereo.setter
+    def stereo(self, value = True):
+        current_value = self.read_register(0x2100)
+        self.write_register(0x2100, current_value & ~3 | (3 if value else 0))
+        time.sleep(0.01)  # status: 0x84
 
 
     def enable(self, value = True):

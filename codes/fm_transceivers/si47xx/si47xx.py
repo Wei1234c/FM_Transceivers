@@ -18,6 +18,7 @@ class Si47xx(Device):
     READ_ONLY_REGISTERS = []
 
     FREQ_REF = 32768
+    REFCLK_PRESCALE = 1
     FREQ_UNIT = int(10e3)
     FREQ_MIN = int(76e6)
     FREQ_MAX = int(108e6)
@@ -77,6 +78,7 @@ class Si47xx(Device):
         # Configuration
         self._set_property_by_name('GPO_IEN', 0x00C7)  # sources for the GPO2/INT interrupt pin
         self._set_property_by_name('REFCLK_FREQ', self.FREQ_REF)  # frequency of the REFCLK
+        self._set_property_by_name('REFCLK_PRESCALE', self.REFCLK_PRESCALE)
         self.mute_line_input(False)
         self._set_pre_emphasis(pre_emphasis_us = self._pre_emphasis_us)
         self._set_audio_frequency_deviation(deviation_Hz = 66.25e3)
@@ -86,8 +88,10 @@ class Si47xx(Device):
             self.set_frequency(self._frequency)
         self.set_power(self._tx_power)
         self._set_capacitance(self._capacitance)
+
+        # Stereo & Pilot
+        self._set_pilot(freq_Hz = 19e3, deviation_Hz = 6.75e3)
         self.stereo = True
-        self._set_pilot(freq_Hz = 19e3, deviation_Hz = 6.75e3, enable = self.stereo)
 
         # Audio Dynamic Range Control (Compressor) and Limiter
         self._set_audio_dynamic_range_control(threshold_dBFS = -40., gain_dB = self.AUDIO_DYNAMIC_RANGE_CONTROL_GAIN_dB,
@@ -98,6 +102,10 @@ class Si47xx(Device):
                           release_time_ms = 39.38, enable = True)
 
         self.start()
+
+
+    def reset(self):
+        self.init()
 
 
     def _assert_reset(self):
@@ -583,35 +591,32 @@ class Si47xx(Device):
 
     @property
     def stereo(self):
-        return self._get_property_element('LMR') == 1
+        return self._get_property_element('LMR') == 1 and self._get_property_element('PILOT') == 1
 
 
     @stereo.setter
     def stereo(self, value = True):
         self._set_property_element('LMR', int(value))
         time.sleep(0.01)  # status: 0x84
-
-
-    def _set_pilot(self, freq_Hz = 19e3, deviation_Hz = 6.75e3, enable = True):
-
-        if enable:
-            # Transmit Pilot Frequency Deviation.
-            # Pilot tone frequency deviation is programmable from 0 Hz to 90 kHz in 10 Hz units.
-            # Default is 675 (6.75 kHz). Note that the total deviation of the audio, pilot, and RDS
-            # must be less than 75 kHz to meet regulatory requirements.
-            assert 0 <= deviation_Hz <= 90e3
-            unit = 10
-            self._set_property_by_name('TX_PILOT_DEVIATION', round(deviation_Hz // unit))
-
-            # This property is used to set the frequency of the stereo pilot in 1 Hz steps.
-            # The stereo pilot is nominally set to 19 kHz for stereo operation,
-            # however the pilot can be set to any frequency from 0 Hz to 19 kHz to support the generation of an audible test tone.
-            # When using the stereo pilot as an audible test generator it is recommended that the RDS bit (D2) be disabled.
-            assert 0 <= deviation_Hz <= 19e3
-            self._set_property_by_name('TX_PILOT_FREQUENCY', round(freq_Hz))
-
-        self._set_property_element('PILOT', int(enable))
+        self._set_property_element('PILOT', int(value))
         time.sleep(0.01)  # status: 0x84
+
+
+    def _set_pilot(self, freq_Hz = 19e3, deviation_Hz = 6.75e3):
+        # Transmit Pilot Frequency Deviation.
+        # Pilot tone frequency deviation is programmable from 0 Hz to 90 kHz in 10 Hz units.
+        # Default is 675 (6.75 kHz). Note that the total deviation of the audio, pilot, and RDS
+        # must be less than 75 kHz to meet regulatory requirements.
+        assert 0 <= deviation_Hz <= 90e3
+        unit = 10
+        self._set_property_by_name('TX_PILOT_DEVIATION', round(deviation_Hz // unit))
+
+        # This property is used to set the frequency of the stereo pilot in 1 Hz steps.
+        # The stereo pilot is nominally set to 19 kHz for stereo operation,
+        # however the pilot can be set to any frequency from 0 Hz to 19 kHz to support the generation of an audible test tone.
+        # When using the stereo pilot as an audible test generator it is recommended that the RDS bit (D2) be disabled.
+        assert 0 <= deviation_Hz <= 19e3
+        self._set_property_by_name('TX_PILOT_FREQUENCY', round(freq_Hz))
 
 
     @property

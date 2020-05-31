@@ -27,6 +27,7 @@ class Si4713_proxy:
                                 (11267, 0), (11268, 0), (11269, 0), (11270, 0), (11271, 0))
     FREQ_DEFAULT = 88.8e6
     POWER_DEFAULT = 115
+    MAX_LINE_INPUT_LEVELS_mV_pk = {0: 190, 1: 301, 2: 416, 3: 636}
 
 
     def __init__(self, bus, pin_reset, i2c_address = I2C_ADDRESS,
@@ -118,6 +119,11 @@ class Si4713_proxy:
 
     def mute_line_input(self, value = True):
         self.write_register(0x2105, 0x03 if value else 0x00)
+
+
+    def set_line_input_level(self, attenuation_level = 3, line_level = None):
+        line_level = self.MAX_LINE_INPUT_LEVELS_mV_pk[attenuation_level] if line_level is None else line_level
+        self.write_register(0x2104, ((attenuation_level & 0x03) << 12) | (line_level & 0x3FF))
 
 
     @property

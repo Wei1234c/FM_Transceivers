@@ -99,7 +99,7 @@ class Si47xx(Device):
         # Audio Signal Quality
         self._set_line_input_level(attenuation_level = 0)
         self._set_limiter(level_low_dB = -50, level_high_dB = -20, duration_low_ms = 10000, duration_high_ms = 5000,
-                          release_time_ms = 39.38, enable = True)
+                          release_time_ms = 39.38)
 
         self.start()
 
@@ -428,7 +428,8 @@ class Si47xx(Device):
 
     @property
     def line_level(self):
-        return self.asq_status.value_of_element('INLEVEL') - 2 ** 8
+        level = self.asq_status.value_of_element('INLEVEL')
+        return 0 if level == 0 else level - 2 ** 8
 
 
     def noise_level_dBuV(self, freq, capacitance = 0):
@@ -570,7 +571,7 @@ class Si47xx(Device):
 
             interrupts = int(overmodulation_detection_enable) << 2 | \
                          int(input_audio_level_detection_high_threshold_enable) << 1 | \
-                         int(input_audio_level_detection_low_threshold_enable) & 0xFF
+                         int(input_audio_level_detection_low_threshold_enable) & 0xFFFF
             self._set_property_by_name('TX_ASQ_INTERRUPT_SELECT', interrupts)
             time.sleep(0.01)  # status: 0x82
 

@@ -78,7 +78,7 @@ class Si47xx(Device):
         # Configuration
         self._set_property_by_name('GPO_IEN', 0x00C7)  # sources for the GPO2/INT interrupt pin
         self._set_property_by_name('REFCLK_FREQ', self.FREQ_REF)  # frequency of the REFCLK
-        self._set_property_by_name('REFCLK_PRESCALE', self.REFCLK_PRESCALE)
+        self._set_property_element('REFCLKP', self.REFCLK_PRESCALE)
         self.mute_line_input(False)
         self._set_pre_emphasis(pre_emphasis_us = self._pre_emphasis_us)
         self._set_audio_frequency_deviation(deviation_Hz = 66.25e3)
@@ -97,7 +97,7 @@ class Si47xx(Device):
         self._set_audio_dynamic_range_control(threshold_dBFS = -40., gain_dB = self.AUDIO_DYNAMIC_RANGE_CONTROL_GAIN_dB,
                                               attack_time_ms = 1.5, release_time_ms = 1000)
         # Audio Signal Quality
-        self._set_line_input_attenuation_level(0)
+        self._set_line_input_level(attenuation_level = 0)
         self._set_limiter(level_low_dB = -50, level_high_dB = -20, duration_low_ms = 10000, duration_high_ms = 5000,
                           release_time_ms = 39.38, enable = True)
 
@@ -274,9 +274,9 @@ class Si47xx(Device):
 
 
     @property
-    def _asq_status(self):
+    def asq_status(self):
         command = self.commands['TX_ASQ_STATUS']
-        command.arguments.elements['INTACK']['element'].value = 0
+        command.arguments.elements['INTACK']['element'].value = 1
         self._send_command(command)
         return command.responses
 
@@ -408,26 +408,27 @@ class Si47xx(Device):
 
     @property
     def input_level(self):
-        asq_status = self._asq_status
-        return struct.unpack("b", asq_status.value_of_element('INLEVEL').to_bytes(1, 'big'))[0]
+        return struct.unpack("b", self.asq_status.value_of_element('INLEVEL').to_bytes(1, 'big'))[0]
 
 
     @property
     def output_signal_above_requested_modulation_level(self):
-        asq_status = self._asq_status
-        return asq_status.value_of_element('OVERMOD') == 1
+        return self.asq_status.value_of_element('OVERMOD') == 1
 
 
     @property
     def input_audio_level_high_threshold_exceeded(self):
-        asq_status = self._asq_status
-        return asq_status.value_of_element('IALH') == 1
+        return self.asq_status.value_of_element('IALH') == 1
 
 
     @property
     def input_audio_level_low_threshold_exceeded(self):
-        asq_status = self._asq_status
-        return asq_status.value_of_element('IALL') == 1
+        return self.asq_status.value_of_element('IALL') == 1
+
+
+    @property
+    def line_level(self):
+        return self.asq_status.value_of_element('INLEVEL') - 2 ** 8
 
 
     def noise_level_dBuV(self, freq, capacitance = 0):
@@ -518,9 +519,10 @@ class Si47xx(Device):
         self._wait_for_tune_completed()
 
 
-    def _set_line_input_attenuation_level(self, attenuation_level = 3):
+    def _set_line_input_level(self, attenuation_level = 3, line_level = None):
+        line_level = self.MAX_LINE_INPUT_LEVELS_mV_pk[attenuation_level] if line_level is None else line_level
         self._set_property_element('LIATTEN', attenuation_level)
-        self._set_property_element('LILEVEL', self.MAX_LINE_INPUT_LEVELS_mV_pk[attenuation_level])
+        self._set_property_element('LILEVEL', line_level)
 
 
     def _set_audio_dynamic_range_control(self, threshold_dBFS = -40., gain_dB = 15,

@@ -21,7 +21,7 @@ class Device(interfaces.Device):
 
     @property
     def is_virtual_device(self):
-        raise NotImplementedError()
+        return self._bus.is_virtual_device
 
 
     @property
@@ -39,6 +39,15 @@ class Device(interfaces.Device):
         raise NotImplementedError()
 
 
+    def set_power(self, power):
+        raise NotImplementedError()
+
+
+    @property
+    def tx_power(self):
+        raise NotImplementedError()
+
+
     def enable_output(self, value = True):
         self._action = 'enable_output: {}'.format(value)
         raise NotImplementedError()
@@ -50,4 +59,22 @@ class Device(interfaces.Device):
 
 
     def _read_register(self, register):
+        raise NotImplementedError()
+
+
+    def mute_line_input(self, value = True):
+        raise NotImplementedError()
+
+
+    def mute(self, value = True):
+        raise NotImplementedError()
+
+
+    @property
+    def stereo(self):
+        raise NotImplementedError()
+
+
+    @stereo.setter
+    def stereo(self, value = True):
         raise NotImplementedError()

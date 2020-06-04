@@ -142,12 +142,14 @@ class Si4713_proxy:
         self.mute(not value)
 
 
+    # =================== data access ======================
+
     def _read_bytes(self, n_bytes):
-        return self._bus.read_bytes(self._i2c_address, n_bytes)
+        return self._bus._read_bytes(self._i2c_address, n_bytes)
 
 
     def _write_bytes(self, bytes_array):
-        self._bus.write_bytes(self._i2c_address, bytes_array)
+        self._bus._write_bytes(self._i2c_address, bytes_array)
         time.sleep(0.01)  # wait for CTS
         return self._read_bytes(1)[0]
 

@@ -398,18 +398,18 @@ def _get_registers_map():
     regs_map = RegistersMap(name = 'RDA5820', description = 'RDA5820 registers.', registers = _get_all_registers())
 
     default_values = ((0x00, 0x5820),
-                      (0x04, 0x4600),
-                      (0x05, 0x888F),
+                      (0x04, 0x4400),
+                      (0x05, 0x8881),
                       (0x06, 0x0800),
-                      (0x07, 0x4E02),
+                      (0x07, 0x5EC6),
                       (0x0A, 0x0400),
                       (0x0C, 0x5820),
                       (0x0D, 0x5820),
                       (0x0E, 0x5805),
                       (0x0F, 0x5805),
-                      (0x41, 0x01C0),
+                      (0x41, 0x093F),
                       (0x67, 0x0E10),
-                      (0x68, 0x0400))
+                      (0x68, 0x05F0))
 
     for addr, value in default_values:
         regs_map.registers_by_address[addr].default_value = value

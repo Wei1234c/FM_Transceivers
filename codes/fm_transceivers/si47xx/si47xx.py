@@ -470,7 +470,7 @@ class Si47xx(Device):
 
 
         def _set_pre_emphasis(self, pre_emphasis_us = 75):
-            self._parent.io._write_register_by_name('TX_PREEMPHASIS', self._parent.PRE_EMPHASIS[pre_emphasis_us])
+            self._parent.io._write_register_by_name('TX_PREEMPHASIS', self._parent.EMPHASIS[pre_emphasis_us])
 
 
         def _set_pilot(self, freq_Hz = 19e3, deviation_Hz = 6.75e3):

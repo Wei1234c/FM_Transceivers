@@ -14,12 +14,12 @@ si = Si4713(bus, pin_reset = pin_reset, freq = freq)
 
 print(si.registers_values)
 
-si.rds.set_up(program_id = 0x0520,
-              station_name = "Wei Lin",
-              radio_text = "My Radio Station !",
-              program_type_code = 4,
-              repeat_count = 3, message_count = 1, rds_mix_ratio = 50,
-              rds_fifo_size = 20,
-              enable = True)
+si.rds.set_rds(program_id = 0x0520,
+               station_name = "Wei Lin",
+               radio_text = "My Radio Station !",
+               program_type_code = 4,
+               repeat_count = 3, message_count = 1, rds_mix_ratio = 50,
+               rds_fifo_size = 20,
+               enable = True)
 
 print(si.frequency)

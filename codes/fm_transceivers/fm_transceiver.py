@@ -29,13 +29,18 @@ class Device(interfaces.Device):
         raise NotImplementedError()
 
 
-    def set_frequency(self, freq, freq_correction = None):
-        self._action = 'set_frequency {}'.format(freq)
+    @property
+    def frequency(self):
         raise NotImplementedError()
 
 
     @property
     def current_frequency(self):
+        raise NotImplementedError()
+
+
+    def set_frequency(self, freq, freq_correction = None):
+        self._action = 'set_frequency {}'.format(freq)
         raise NotImplementedError()
 
 

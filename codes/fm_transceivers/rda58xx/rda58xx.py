@@ -19,17 +19,28 @@ class RDA58xx(Device):
     I2C_ADDRESS = 0x11
     READ_ONLY_REGISTERS = [0]
 
-    LNA_INPUT_PORTS = {None: 0, 'LNAN': 1, 'LNAP': 2, 'Dual_Ports': 3}
-    PGA_GAINS = {1.2: 0, 0.6: 1, 0.3: 2, 0.15: 3, 0.075: 4, 0.037: 5, 0.018: 6, 0.009: 7}
-    PGA_GAINS_value_key = _value_key(PGA_GAINS)
-    PA_GAINS = {3: 0x3F, 0: 0x27, -3: 0x19, -32: 0}
-    PA_GAINS_value_key = _value_key(PA_GAINS)
+    CLK_MODES = {32768: 0, 12e6: 1, 24e6: 5, 13e6: 2, 26e6: 6, 19.2e6: 3, 38.4e6: 7}
+    FREQ_REF = 32768
+
+    FREQ_MIN = int(65e6)
+    FREQ_MAX = int(115e6)
+    FREQ_STEP = int(50e3)
 
     BANDS = {'US_Europe': 0, 'Japan': 1, 'World_wide': 2, 'East_Europe': 3}
     BANDS_value_key = _value_key(BANDS)
+    BANDS_FREQ_MIN = {0: 87e6, 1: 76e6, 2: 76e6, 3: 65e6}
+
     CHANNEL_SPACING_KHZ = {100: 0, 200: 1, 50: 2, 25: 3}
     CHANNEL_SPACING_KHZ_value_key = _value_key(CHANNEL_SPACING_KHZ)
-    FREQ_REF = 32768
+
+    LNA_INPUT_PORTS = {None: 0, 'LNAN': 1, 'LNAP': 2, 'Dual_Ports': 3}
+    PGA_GAINS = {1.2: 0, 0.6: 1, 0.3: 2, 0.15: 3, 0.075: 4, 0.037: 5, 0.018: 6, 0.009: 7}
+    PGA_GAINS_value_key = _value_key(PGA_GAINS)
+
+    EMPHASIS = {75: 0, 50: 1, None: 2}
+
+    PA_GAINS = {3: 0x3F, 0: 0x27, -1.47: 0x20, -3: 0x19, -32: 0}
+    PA_GAINS_value_key = _value_key(PA_GAINS)
 
     GPIO_MODES = {'High_Impedance'  : 0,
                   'Stereo_Indicator': 1,
@@ -37,44 +48,16 @@ class RDA58xx(Device):
                   'Reserved'        : 1,
                   'Low'             : 2, 'High': 3}
 
-    CLK_MODES = {32768: 0, 12e6: 1, 24e6: 5, 13e6: 2, 26e6: 6, 19.2e6: 3, 38.4e6: 7}
-
     I2S_SAMPLING_RATES = {48e3: 8, 44.1e3: 7, 32e3: 6, 24e3: 5, 22.05e3: 4, 16e3: 3, 12e3: 2, 11.025e3: 1, 8e3: 0}
 
     WORK_MODES = {'FM_Receiver': 0, 'FM_Transmitter': 1, 'Audio_Amplifier': 8, 'CODEC': 12, 'ADC': 14}
 
-    # REFCLK_PRESCALE = 1
-    # FREQ_UNIT = int(10e3)
-    FREQ_MIN = int(65e6)
-    FREQ_MAX = int(115e6)
-    FREQ_STEP = int(50e3)
-
-    EMPHASIS = {75: 0, 50: 1, None: 2}
-
-
-    # MAX_LINE_INPUT_LEVELS_mV_pk = {0: 190, 1: 301, 2: 416, 3: 636}
-    # AUDIO_DYNAMIC_RANGE_CONTROL_GAIN_dB = 15
-    # AUDIO_DYNAMIC_RANGE_CONTROL_ATTACK_TIMES = {0.5: 0, 1: 1, 1.5: 2, 2: 3, 2.5: 4, 3: 5, 3.5: 6, 4: 7, 4.5: 8, 5: 9}
-    # AUDIO_DYNAMIC_RANGE_CONTROL_RELEASE_TIMES = {100: 0, 200: 1, 350: 2, 525: 3, 1000: 4}
-    #
-    # LIMITER_RELEASE_TIMES = {102.39: 5, 85.33: 6, 73.14: 7, 63.99: 8, 51.19: 10, 39.38: 13, 30.11: 17, 20.47: 25,
-    #                          10.03 : 51, 8.97: 57, 7.99: 64, 7.01: 73, 6.02: 85, 5.01: 102, 4.02: 127, 3: 170, 2: 255,
-    #                          1     : 510, 0.5: 1000, 0.25: 2000}
-    #
-    # DIGITAL_MODES = {'default': 0, 'I2S': 1, 'Left_Justified_I2S': 7, 'MSB_at_1st_DCLK': 13, 'MSB_at_2nd_DCLK': 9}
-    # DIGITAL_AUDIO_SAMPLE_PRECISION = {16: 0, 20: 1, 24: 2, 8: 3}
-    #
-    # RDS_MIX_RATIOS = {0: 0, 12.5: 1, 25: 2, 50: 3, 75: 4, 87.5: 5, 100: 6}
 
     class _Base:
 
         def __init__(self, parent):
             self._parent = parent
             self._gain = 1
-
-
-        def __del__(self):
-            self._parent = None
 
 
         @property
@@ -140,13 +123,7 @@ class RDA58xx(Device):
             self._parent._write_element_by_name('CLK_MODE', self._parent.CLK_MODES[mode] & 0x07)
 
 
-    class _PowerControl(_Base):
-
-        def _soft_reset(self):
-            self._parent._write_element_by_name('SOFT_RESET', 1)
-            time.sleep(0.1)
-            self._parent._write_element_by_name('SOFT_RESET', 0)
-
+    class _Control(_Base):
 
         def power_up(self):
             self._parent._write_element_by_name('ENABLE', 1)
@@ -169,6 +146,26 @@ class RDA58xx(Device):
         def reboot(self):
             self.power_down()
             self.boot()
+
+
+        def _soft_reset(self):
+            self._parent._write_element_by_name('SOFT_RESET', 1)
+            time.sleep(0.1)
+            self._parent._write_element_by_name('SOFT_RESET', 0)
+
+            # default enable output
+            # In Audio-Amplifier mode:
+            # - setting 0 will silent it for good until software-reset.
+            # - should set only once, better right after reset.
+            self._parent._write_element_by_name('DHIZ', 1)
+            self._parent._write_element_by_name('DMUTE', 1)
+
+
+        def _set_work_mode(self, mode):
+            valids = self._parent.WORK_MODES.keys()
+            assert mode in valids, 'valid mode: {}'.format(valids)
+
+            self._parent._write_element_by_name('WORK_MODE', self._parent.WORK_MODES[mode])
 
 
     class _DigitalIO(_Base):
@@ -229,7 +226,13 @@ class RDA58xx(Device):
 
         @property
         def stereo(self):
-            return self._parent._read_element_by_name('ST').value == 1
+            mono = self._parent._read_element_by_name('MONO').value
+            st = self._parent._read_element_by_name('ST').value
+
+            if self._parent._work_mode == 'FM_Transmitter':
+                return mono == 0
+            if self._parent._work_mode == 'FM_Receiver':
+                return mono == 0 and st == 1
 
 
         @stereo.setter
@@ -247,14 +250,15 @@ class RDA58xx(Device):
 
 
         def set_frequency(self, freq):
-            spacing = self.channel_spacing_KHz * 1e3
-            freq = freq // spacing * spacing
-            chan = round((freq - self.freq_min) / spacing)
+            if freq is not None:
+                spacing = self.channel_spacing_KHz * 1e3
+                freq = freq // spacing * spacing
+                chan = round((freq - self.freq_min) / spacing)
 
-            self._parent.map.elements['TUNE']['element'].value = 1
-            self._parent._write_element_by_name('CHAN', chan)
-            self._parent.io._wait_for_seek_tune_complete(self._parent._timeout_seconds)
-            self._frequency = freq
+                self._parent.map.elements['TUNE']['element'].value = 1
+                self._parent._write_element_by_name('CHAN', chan)
+                self._parent.io._wait_for_seek_tune_complete(self._parent._timeout_seconds)
+                self._frequency = freq
 
 
         def _set_freq_mode(self, value = True):
@@ -281,7 +285,7 @@ class RDA58xx(Device):
 
         @property
         def freq_min(self):
-            return {0: 87e6, 1: 76e6, 2: 76e6, 3: 65e6}[self._parent._read_element_by_name('BAND').value]
+            return self._parent.BANDS_FREQ_MIN[self._parent._read_element_by_name('BAND').value]
 
 
         def _set_channel_spacing(self, KHz = 100):
@@ -302,6 +306,8 @@ class RDA58xx(Device):
     class _AudioAmplifier(_Base):
 
         def mute(self, value = True):
+            # In Audio_Amplifier mode, after setting DHIZ, DMUTE False,
+            # setting them True will not restore output. hardware bug ?
             pass
 
 
@@ -378,7 +384,7 @@ class RDA58xx(Device):
             self._parent._write_element_by_name('FMTX_PILOT_DEV', deviation)
 
 
-        def _set_audio_deviation(self, deviation = 0x20):
+        def _set_audio_deviation(self, deviation = 0xFF):
             self._parent._write_element_by_name('FMTX_AUDIO_DEV', deviation)
 
 
@@ -484,13 +490,14 @@ class RDA58xx(Device):
             return self._parent._read_element_by_name('RSSI').value
 
 
-        def noise_level_dBuV(self, freq, wait_seconds = 0.2):
+        def noise_level_dBuV(self, freq, wait_seconds = 0.3):
+            assert self._parent._work_mode == 'FM_Receiver', 'Must be in FM_Receiver mode.'
             self._parent.tuner.set_frequency(freq)
             time.sleep(wait_seconds)
             return self.rssi
 
 
-        def scan_noise_levels(self, freq_start = None, freq_end = None, step = None, wait_seconds = 0.2):
+        def scan_noise_levels(self, freq_start = None, freq_end = None, step = None, wait_seconds = 0.3):
             freq_start = self._parent.FREQ_MIN if freq_start is None else freq_start
             freq_end = self._parent.FREQ_MAX if freq_end is None else freq_end
             step = self._parent.FREQ_STEP if step is None else step
@@ -597,14 +604,12 @@ class RDA58xx(Device):
 
         self.init()
 
-        self.tuner.set_frequency(freq)
-        self.transmitter.set_power(tx_power_dBm)
-
 
     def _build(self):
         self.adc = self._ADC(self)
         self.audio_amplifier = self._AudioAmplifier(self)
         self.codec = self._CODEC(self)
+        self.control = self._Control(self)
         self.dac = self._DAC(self)
         self.digital_io = self._DigitalIO(self)
         self.dsp = self._DSP(self)
@@ -612,12 +617,10 @@ class RDA58xx(Device):
         self.io = self._IO(self)
         self.pga = self._PGA(self)
         self.line_input = self.pga
-        self.power_control = self._PowerControl(self)
         self.rds = self._RDS(self)
         self.receiver = self._Receiver(self)
         self.reference_clock = self._ReferenceClock(self)
         self.transmitter = self._Transmitter(self)
-        # self.line_input = self._LineInput(self)
         self.tuner = self._Tuner(self)
 
         self.components = {'FM_Receiver'    : self.receiver,
@@ -630,15 +633,12 @@ class RDA58xx(Device):
     def init(self):
 
         self._action = 'init'
-        self._build()
-
         self.map.reset()
 
-        self.power_control.boot()
+        self._build()
 
-        self.io._enable_stc_interrupt(True)
-
-        self.set_work_mode(self._work_mode)
+        self.control.reboot()
+        self.control._set_work_mode(self._work_mode)
 
         self.reference_clock._set_clock_mode(mode = self._ref_freq)
 
@@ -648,28 +648,37 @@ class RDA58xx(Device):
 
         self.dsp._enable_afc(True)
         self.dsp._enable_bass_boost(True)
+        self.dsp._enable_soft_blend(False)
         self.dsp._enable_soft_mute(False)
 
-        self._active_component._enable_output(True)
         self._active_component.set_volume(1)
 
-        self.receiver._seek_mode_wrap_around(True)
-        self.receiver._set_seek_direction(up = True)
-        self.receiver._set_seek_threshold(8)
+        if self._work_mode in ('FM_Receiver', 'FM_Transmitter'):
 
-        self.transmitter.set_power(self._tx_power_dBm)
-        self.transmitter._set_audio_deviation(0xF0)
-        self.transmitter._set_pilot_deviation(0x0E)
+            self.io._enable_stc_interrupt(True)
 
-        self.tuner._set_band('US_Europe')
-        self.tuner._set_channel_spacing(100)
-        self.tuner._set_emphasis(self._emphasis_us)
-        self.stereo = True
+            self.receiver._seek_mode_wrap_around(True)
+            self.receiver._set_seek_direction(up = True)
+            self.receiver._set_seek_threshold(8)
 
-        if self._frequency is not None:
-            self.tuner.set_frequency(self._frequency)
+            self.transmitter.set_power(self._tx_power_dBm)
+            self.transmitter._set_audio_deviation(0xFF)
+            self.transmitter._set_pilot_deviation(0x0E)
+
+            self.tuner._set_band('US_Europe')
+            self.tuner._set_channel_spacing(100)
+            self.tuner._set_emphasis(self._emphasis_us)
+            self.stereo = True
+
+            if self._frequency is not None:
+                self.tuner.set_frequency(self._frequency)
 
         self.start()
+
+
+    @property
+    def _active_component(self):
+        return self.components[self._work_mode]
 
 
     def reset(self):
@@ -677,21 +686,8 @@ class RDA58xx(Device):
 
 
     def set_work_mode(self, mode = 'FM_Receiver'):
-        valids = self.WORK_MODES.keys()
-        assert mode in valids, 'valid mode: {}'.format(valids)
-
-        self.power_control.reboot()
-
         self._work_mode = mode
-        self._write_element_by_name('WORK_MODE', self.WORK_MODES[mode])
-        self._active_component = self.components[mode]
-
-        self.pga.restore_input_level()
-        self._active_component.restore_volume()
-
-
-    def _set_synthesizer1_frequency(self, freq):
-        self._parent._write_element_by_name('TXPA_GAIN', round(freq / self._ref_freq))
+        self.init()
 
 
     @property
@@ -711,7 +707,7 @@ class RDA58xx(Device):
 
     @property
     def current_frequency(self):
-        return self.tuner.frequency
+        return self.frequency
 
 
     def set_frequency(self, freq):
@@ -756,24 +752,27 @@ class RDA58xx(Device):
         self._print_register(register)
         return register.value
 
-    # =====================================================================
 
 
+try:
 
-class Pin(fx2lp.Pin):
+    class Pin(fx2lp.Pin):
 
-    def __init__(self, gpio: RDA58xx._Gpio, id, value = None, invert = False):
-        super().__init__(gpio = gpio, id = id, mode = fx2lp.Pin.OUT, value = value, invert = invert)
-
-
-    def value(self, value = None):
-        if value is None:
-            return self._gpio._get_pin_value(pin_idx = self._id)
-        else:
-            self._gpio._set_pin_value(pin_idx = self._id, level = value)
+        def __init__(self, gpio: RDA58xx._Gpio, id, value = None, invert = False):
+            super().__init__(gpio = gpio, id = id, mode = fx2lp.Pin.OUT, value = value, invert = invert)
 
 
-    @fx2lp.Pin.mode.setter
-    def mode(self, mode):
-        assert mode == self.OUT, 'Only Pin.OUT supported.'
-        self._mode = mode
+        def value(self, value = None):
+            if value is None:
+                return self._gpio._get_pin_value(pin_idx = self._id)
+            else:
+                self._gpio._set_pin_value(pin_idx = self._id, level = value)
+
+
+        @fx2lp.Pin.mode.setter
+        def mode(self, mode):
+            assert mode == self.OUT, 'Only Pin.OUT supported.'
+            self._mode = mode
+
+except (NameError, ImportError):
+    pass

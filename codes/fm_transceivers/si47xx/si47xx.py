@@ -166,7 +166,7 @@ class Si47xx(Device):
             self._parent.io._write_element_by_name('REFCLKP', prescaler)
 
 
-    class _PowerControl(_Base):
+    class _Control(_Base):
 
         def _assert_reset(self):
             if not self._parent.is_virtual_device:
@@ -222,7 +222,8 @@ class Si47xx(Device):
 
 
         def _set_input_level(self, attenuation_level = 3, line_level = None):
-            line_level = self._parent.MAX_LINE_INPUT_LEVELS_mV_pk[attenuation_level] if line_level is None else line_level
+            line_level = self._parent.MAX_LINE_INPUT_LEVELS_mV_pk[
+                attenuation_level] if line_level is None else line_level
             self._parent.io._write_element_by_name('LIATTEN', attenuation_level)
             self._parent.io._write_element_by_name('LILEVEL', line_level)
 
@@ -230,7 +231,7 @@ class Si47xx(Device):
     class _DigitalInput(_Base):
 
         def power_up_digital_mode(self, *args, **kwargs):
-            self._parent.power_control.power_up(analog_audio_inputs = False, *args, **kwargs)
+            self._parent.control.power_up(analog_audio_inputs = False, *args, **kwargs)
 
 
         def _set_digital_input(self, digital_mode = 'I2S', sample_on_dclk_falling_edge = False,
@@ -241,7 +242,8 @@ class Si47xx(Device):
                 property.elements['IFALL'].value = int(sample_on_dclk_falling_edge)
                 property.elements['IMODE'].value = self._parent.DIGITAL_MODES[digital_mode]
                 property.elements['IMONO'].value = int(mono_audio_mode)
-                property.elements['ISIZE'].value = self._parent.DIGITAL_AUDIO_SAMPLE_PRECISION[digital_audio_sample_bits]
+                property.elements['ISIZE'].value = self._parent.DIGITAL_AUDIO_SAMPLE_PRECISION[
+                    digital_audio_sample_bits]
                 self._parent.io._set_property(property)
 
             assert sample_rate == 0 or 32000 <= sample_rate <= 48000
@@ -267,9 +269,11 @@ class Si47xx(Device):
                 self._parent.io._write_register_by_name('TX_ACOMP_THRESHOLD', 2 ** 16 + round(threshold_dBFS))
                 self._parent.io._write_register_by_name('TX_ACOMP_GAIN', gain_dB)
                 self._parent.io._write_register_by_name('TX_ACOMP_ATTACK_TIME',
-                                                    self._parent.AUDIO_DYNAMIC_RANGE_CONTROL_ATTACK_TIMES[attack_time_ms])
+                                                        self._parent.AUDIO_DYNAMIC_RANGE_CONTROL_ATTACK_TIMES[
+                                                            attack_time_ms])
                 self._parent.io._write_register_by_name('TX_ACOMP_RELEASE_TIME',
-                                                    self._parent.AUDIO_DYNAMIC_RANGE_CONTROL_RELEASE_TIMES[release_time_ms])
+                                                        self._parent.AUDIO_DYNAMIC_RANGE_CONTROL_RELEASE_TIMES[
+                                                            release_time_ms])
 
             self._parent.io._write_element_by_name('ACEN', int(enable))
 
@@ -309,7 +313,7 @@ class Si47xx(Device):
                 assert 0 <= duration_high_ms <= 65535
 
                 self._parent.io._write_register_by_name('TX_LIMITER_RELEASE_TIME',
-                                                    self._parent.LIMITER_RELEASE_TIMES[release_time_ms])
+                                                        self._parent.LIMITER_RELEASE_TIMES[release_time_ms])
                 self._parent.io._write_register_by_name('TX_ASQ_LEVEL_LOW', 2 ** 8 + round(level_low_dB))
                 self._parent.io._write_register_by_name('TX_ASQ_DURATION_LOW', duration_low_ms)
                 self._parent.io._write_register_by_name('TX_ASQ_LEVEL_HIGH', 2 ** 8 + round(level_high_dB))
@@ -470,7 +474,7 @@ class Si47xx(Device):
 
 
         def _set_pre_emphasis(self, pre_emphasis_us = 75):
-            self._parent.io._write_register_by_name('TX_PREEMPHASIS', self._parent.EMPHASIS[pre_emphasis_us])
+            self._parent.io._write_register_by_name('TX_PREEMPHASIS', self._parent.PRE_EMPHASIS[pre_emphasis_us])
 
 
         def _set_pilot(self, freq_Hz = 19e3, deviation_Hz = 6.75e3):
@@ -596,7 +600,8 @@ class Si47xx(Device):
                 self._parent.io._write_register_by_name('TX_RDS_PI', program_id)
                 self._parent.io._write_register_by_name('TX_RDS_PS_MIX', self._parent.RDS_MIX_RATIOS[rds_mix_ratio])
                 self._parent.io._write_register_by_name('TX_RDS_PS_MISC',
-                                                    0x1808 & ~(1 << 12) | (int(self._parent.transmitter.stereo) << 12))
+                                                        0x1808 & ~(1 << 12) | (
+                                                                int(self._parent.transmitter.stereo) << 12))
                 self._parent.io._write_element_by_name('RDSPTY', program_type_code)
                 self._parent.io._write_register_by_name('TX_RDS_PS_REPEAT_COUNT', repeat_count)
                 self._parent.io._write_register_by_name('TX_RDS_PS_MESSAGE_COUNT', message_count)
@@ -659,11 +664,11 @@ class Si47xx(Device):
         self._build()
 
         self._action = 'init'
-        self.power_control._assert_reset()
+        self.control._assert_reset()
         self.map.reset()
 
         # Powerup in Analog Mode
-        self.power_control.power_up()
+        self.control.power_up()
 
         # Configuration
         self.io._write_register_by_name('GPO_IEN', 0x00C7)  # sources for the GPO2/INT interrupt pin
@@ -697,7 +702,7 @@ class Si47xx(Device):
     def _build(self):
         self.io = self._IO(self)
         self.reference_clock = self._ReferenceClock(self)
-        self.power_control = self._PowerControl(self)
+        self.control = self._Control(self)
         self.line_input = self._LineInput(self)
         self.digital_input = self._DigitalInput(self)
         self.compressor = self._Compressor(self)
@@ -747,8 +752,13 @@ class Si47xx(Device):
 
 
     @property
-    def current_frequency(self):
+    def frequency(self):
         return self.tuner.frequency
+
+
+    @property
+    def current_frequency(self):
+        return self.frequency
 
 
     def set_power(self, power):
@@ -789,23 +799,28 @@ class Si47xx(Device):
 
 
 
-class Pin(fx2lp.Pin):
+try:
 
-    def __init__(self, gpio: Si47xx._Gpio, id, mode = fx2lp.Pin.OUT, value = None, invert = False):
-        # self._value = None
-        super().__init__(gpio = gpio, id = id, mode = mode, value = value, invert = invert)
+    class Pin(fx2lp.Pin):
 
-
-    def value(self, value = None):
-        if value is None:
-            return self._value
-        else:
-            self._value = int(bool(value))
-            self._gpio._set_pin_value(idx = self._id, as_high = bool(value))
+        def __init__(self, gpio: Si47xx._Gpio, id, mode = fx2lp.Pin.OUT, value = None, invert = False):
+            # self._value = None
+            super().__init__(gpio = gpio, id = id, mode = mode, value = value, invert = invert)
 
 
-    @fx2lp.Pin.mode.setter
-    def mode(self, mode):
-        assert mode in (self.IN, self.OUT), 'Only Pin.IN, Pin.OUT supported.'
-        self._mode = mode
-        self._gpio._set_pin_direction(idx = self._id, as_output = mode == self.OUT)
+        def value(self, value = None):
+            if value is None:
+                return self._value
+            else:
+                self._value = int(bool(value))
+                self._gpio._set_pin_value(idx = self._id, as_high = bool(value))
+
+
+        @fx2lp.Pin.mode.setter
+        def mode(self, mode):
+            assert mode in (self.IN, self.OUT), 'Only Pin.IN, Pin.OUT supported.'
+            self._mode = mode
+            self._gpio._set_pin_direction(idx = self._id, as_output = mode == self.OUT)
+
+except (NameError, ImportError):
+    pass

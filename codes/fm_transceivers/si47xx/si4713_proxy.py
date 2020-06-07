@@ -7,26 +7,26 @@ import time
 from array import array
 
 
-FREQ_UNIT = int(10e3)
-FREQ_MIN = int(76e6)
-FREQ_MAX = int(108e6)
-
-
 
 class Si4713_proxy:
     I2C_ADDRESS = 0x63
 
-    REGISTERS_ADDRESSES = [1, 257, 259, 513, 514, 8448, 8449, 8450, 8451, 8452, 8453, 8454, 8455, 8704, 8705, 8706,
+    REGISTERS_ADDRESSES = (1, 257, 259, 513, 514, 8448, 8449, 8450, 8451, 8452, 8453, 8454, 8455, 8704, 8705, 8706,
                            8707, 8708, 8709, 8960, 8961, 8962, 8963, 8964, 11264, 11265, 11266, 11267, 11268, 11269,
-                           11270, 11271]
+                           11270, 11271)
 
     DEFAULT_REGISTERS_VALUES = ((1, 199), (257, 0), (259, 0), (513, 32768), (514, 1), (8448, 3), (8449, 6625),
                                 (8450, 675), (8451, 0), (8452, 190), (8453, 0), (8454, 0), (8455, 19000), (8704, 3),
                                 (8705, 65496), (8706, 2), (8707, 4), (8708, 15), (8709, 13), (8960, 7), (8961, 206),
                                 (8962, 10000), (8963, 236), (8964, 5000), (11264, 0), (11265, 0), (11266, 0),
                                 (11267, 0), (11268, 0), (11269, 0), (11270, 0), (11271, 0))
+    FREQ_UNIT = int(10e3)
+    FREQ_MIN = int(76e6)
+    FREQ_MAX = int(108e6)
     FREQ_DEFAULT = 88.8e6
+
     POWER_DEFAULT = 115
+
     MAX_LINE_INPUT_LEVELS_mV_pk = {0: 190, 1: 301, 2: 416, 3: 636}
 
 
@@ -84,11 +84,11 @@ class Si4713_proxy:
 
 
     def set_frequency(self, freq):
-        assert FREQ_MIN <= freq <= FREQ_MAX
+        assert self.FREQ_MIN <= freq <= self.FREQ_MAX
         assert (freq // 1e3) % 50 == 0
 
         self._frequency = freq
-        freq = round(freq // FREQ_UNIT)
+        freq = round(freq // self.FREQ_UNIT)
         self._write_bytes(array('B', [0x30, 0x00, freq >> 8 & 0xFF, freq & 0xFF]))
         time.sleep(0.2)  # need 100ms
 
@@ -145,11 +145,11 @@ class Si4713_proxy:
     # =================== data access ======================
 
     def _read_bytes(self, n_bytes):
-        return self._bus._read_bytes(self._i2c_address, n_bytes)
+        return self._bus.read_bytes(self._i2c_address, n_bytes)
 
 
     def _write_bytes(self, bytes_array):
-        self._bus._write_bytes(self._i2c_address, bytes_array)
+        self._bus.write_bytes(self._i2c_address, bytes_array)
         time.sleep(0.01)  # wait for CTS
         return self._read_bytes(1)[0]
 

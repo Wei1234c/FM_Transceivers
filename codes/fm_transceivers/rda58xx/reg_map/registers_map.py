@@ -375,12 +375,12 @@ Available only in RDS Verbose mode'''),
                                           ], default_value = 0))
 
     registers.append(Register(name = '0x68', address = 104, description = '''0x68''',
-                              elements = [Element(name = 'Reserved_13', idx_lowest_bit = 13, n_bits = 3, value = 0,
+                              elements = [Element(name = 'Reserved_14', idx_lowest_bit = 14, n_bits = 2, value = 0,
                                                   read_only = True,
                                                   description = '''Reserved'''),
-                                          Element(name = 'FMTX_PGA_GAIN', idx_lowest_bit = 10, n_bits = 3, value = 0,
+                                          Element(name = 'FMTX_PGA_GAIN', idx_lowest_bit = 11, n_bits = 3, value = 0,
                                                   description = '''FM Transmit PGA Gain Bit'''),
-                                          Element(name = 'FMTX_ADC_GAIN', idx_lowest_bit = 8, n_bits = 2, value = 0,
+                                          Element(name = 'FMTX_ADC_GAIN', idx_lowest_bit = 8, n_bits = 3, value = 0,
                                                   description = '''FM Transmit ADC Gain Bit'''),
                                           Element(name = 'FMTX_AUDIO_DEV', idx_lowest_bit = 0, n_bits = 8, value = 0,
                                                   description = '''FM Transmit Audio Signal Modulate Parameter'''),
@@ -401,7 +401,7 @@ def _get_registers_map():
                       (0x04, 0x4400),
                       (0x05, 0x8881),
                       (0x06, 0x0800),
-                      (0x07, 0x5EC6),
+                      (0x07, 0x5EC4),
                       (0x0A, 0x0400),
                       (0x0C, 0x5820),
                       (0x0D, 0x5820),
@@ -409,7 +409,7 @@ def _get_registers_map():
                       (0x0F, 0x5805),
                       (0x41, 0x093F),
                       (0x67, 0x0E10),
-                      (0x68, 0x05F0))
+                      (0x68, 0x1FFF))
 
     for addr, value in default_values:
         regs_map.registers_by_address[addr].default_value = value

@@ -395,7 +395,7 @@ def _get_registers_map():
     # duplicated_elements_names = list((n for n in set(elements_names) if elements_names.count(n) > 1))
     # print(duplicated_elements_names)
 
-    regs_map = RegistersMap(name = 'RDA5820', description = 'RDA5820 registers.', registers = _get_all_registers())
+    regs_map = RegistersMap(name = 'RDA5820N', description = 'RDA5820N registers.', registers = _get_all_registers())
 
     default_values = ((0x00, 0x5820),
                       (0x04, 0x4400),

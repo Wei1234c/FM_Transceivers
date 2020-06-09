@@ -1,8 +1,8 @@
 try:
-    from utilities.adapters.peripherals import I2C
+    # from utilities.adapters.peripherals import I2C
     from ..si47xx.si4713_proxy import Si4713_proxy
 except:
-    from peripherals import I2C
+    # from peripherals import I2C
     from si4713_proxy import Si4713_proxy
 
 import time
@@ -15,7 +15,7 @@ def _value_key(dictionary):
 
 
 
-class RDA5820_proxy(Si4713_proxy):
+class RDA5820N_proxy(Si4713_proxy):
     I2C_ADDRESS = 0x11
 
     REGISTERS_ADDRESSES = (0, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 64, 65, 103, 104)
@@ -48,15 +48,18 @@ class RDA5820_proxy(Si4713_proxy):
 
     def __init__(self, bus, i2c_address = I2C_ADDRESS,
                  work_mode = 'FM_Receiver',
-                 freq = FREQ_DEFAULT, stereo = True,
-                 input_level_v = 0.15, tx_power_dBm = 3, volume = 1):
+                 freq = FREQ_DEFAULT, stereo = True, audio_deviation = 0xFF,
+                 input_level_v = 0.15, adc_gain = 7, tx_power_dBm = 3, volume = 1):
 
         self._bus = bus
         self._i2c_address = i2c_address
 
         self._frequency = freq
         self._stereo = stereo
+        self._audio_deviation = audio_deviation
+
         self._input_level_v = input_level_v
+        self._adc_gain = adc_gain
         self._tx_power_dBm = tx_power_dBm
         self._volume = volume
 
@@ -76,10 +79,10 @@ class RDA5820_proxy(Si4713_proxy):
         self.set_frequency(self._frequency)
         self.set_power(self._tx_power_dBm)
         self.stereo = self._stereo
-        self.set_audio_deviation(0xFF)
+        self.set_audio_deviation(self._audio_deviation)
 
-        self.set_line_input_level(0.15)
-        self.set_adc_gain(7)
+        self.set_line_input_level(self._input_level_v)
+        self.set_adc_gain(self._adc_gain)
         self.set_volume(self._volume)
 
         self.enable()
@@ -231,14 +234,3 @@ class RDA5820_proxy(Si4713_proxy):
         return self._bus.write_addressed_bytes(self._i2c_address, reg_address,
                                                array('B', [value >> 8 & 0xFF, value & 0xFF]))
 
-
-    def _get_element_value(self, reg_address, idx_lowest_bit, n_bits):
-        reg_value = self.read_register(reg_address)
-        mask = 2 ** n_bits - 1
-        return reg_value >> idx_lowest_bit & mask
-
-
-    def _set_element_value(self, reg_address, idx_lowest_bit, n_bits, element_value, ):
-        reg_value = self.read_register(reg_address)
-        mask = 2 ** n_bits - 1
-        return reg_value & ~(mask << idx_lowest_bit) | ((element_value & mask) << idx_lowest_bit)

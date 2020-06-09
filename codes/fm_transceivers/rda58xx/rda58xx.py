@@ -169,6 +169,7 @@ class RDA58xx(Device):
 
 
     class _DigitalIO(_Base):
+        # todo: test I2S interface
 
         @property
         def enabled(self):
@@ -294,8 +295,7 @@ class RDA58xx(Device):
 
         @property
         def _tune_completed(self):
-            # self._get_interrupt_status()
-            return self._stc_ready
+            return self._parent.io._seek_tune_completed
 
 
         def _valiate_freq(self, freq):
@@ -312,6 +312,7 @@ class RDA58xx(Device):
 
 
     class _CODEC(_Base):
+        # todo: implement CODEC
         pass
 
 
@@ -323,6 +324,7 @@ class RDA58xx(Device):
 
 
     class _DAC(_Base):
+        # todo: implement DAC
         pass
 
 
@@ -430,7 +432,7 @@ class RDA58xx(Device):
 
 
         def _select_LNA_input_port(self, port = 'LNAP'):
-            self._parent._write_element_by_name('LNA_PORT_SEL', self.LNA_INPUT_PORTS[port])
+            self._parent._write_element_by_name('LNA_PORT_SEL', self._parent.LNA_INPUT_PORTS[port])
 
 
         @property
@@ -515,6 +517,7 @@ class RDA58xx(Device):
 
 
     class _RDS(_Base):
+        # todo: implement RDS.
 
         def set_ps(self, station_name):
             raise NotImplementedError()
@@ -552,7 +555,7 @@ class RDA58xx(Device):
         def _set_gpio_mode(self, idx, mode = 'High_Impedance'):
             if not (mode == 'High_Impedance' or (mode == 'Reserved' and idx == 1)):
                 self._parent.digital_io.enable(False)
-            self._parent._write_element_by_name('GPIO{}'.format(idx), self.GPIO_MODES[mode] & 0x03)
+            self._parent._write_element_by_name('GPIO{}'.format(idx), self._parent.GPIO_MODES[mode] & 0x03)
 
 
         def _gpio_as_High_Impedance(self, idx):
@@ -580,9 +583,10 @@ class RDA58xx(Device):
             return Pin(gpio = self, id = id, value = value, invert = invert)
 
 
-    def __init__(self, bus: fx2lp.I2C, i2c_address = I2C_ADDRESS, ref_freq = FREQ_REF,
+    def __init__(self, bus, i2c_address = I2C_ADDRESS, ref_freq = FREQ_REF,
                  work_mode = 'FM_Receiver',
-                 freq = FREQ_DEFAULT, emphasis_us = 75, tx_power_dBm = 3,
+                 freq = FREQ_DEFAULT, emphasis_us = 75, audio_deviation = 0xFF,
+                 input_level_v = 0.15, adc_gain = 7,  tx_power_dBm = 3, volume = 1,
                  registers_map = None, registers_values = None,
                  timeout_seconds = 0.2, seek_timeout_seconds = 5):
 
@@ -597,7 +601,12 @@ class RDA58xx(Device):
 
         self._work_mode = work_mode
         self._emphasis_us = emphasis_us
+        self._audio_deviation = audio_deviation
+
+        self._input_level_v = input_level_v
+        self._adc_gain = adc_gain
         self._tx_power_dBm = tx_power_dBm
+        self._volume = volume
 
         self._timeout_seconds = timeout_seconds
         self._seek_timeout_seconds = seek_timeout_seconds
@@ -642,16 +651,16 @@ class RDA58xx(Device):
 
         self.reference_clock._set_clock_mode(mode = self._ref_freq)
 
-        self.pga.set_input_level(input_level_v = 0.15)
+        self.pga.set_input_level(input_level_v = self._input_level_v)
 
-        self.adc._set_gain(7)
+        self.adc._set_gain(self._adc_gain)
 
         self.dsp._enable_afc(True)
         self.dsp._enable_bass_boost(True)
         self.dsp._enable_soft_blend(False)
         self.dsp._enable_soft_mute(False)
 
-        self._active_component.set_volume(1)
+        self._active_component.set_volume(self._volume)
 
         if self._work_mode in ('FM_Receiver', 'FM_Transmitter'):
 
@@ -662,7 +671,7 @@ class RDA58xx(Device):
             self.receiver._set_seek_threshold(8)
 
             self.transmitter.set_power(self._tx_power_dBm)
-            self.transmitter._set_audio_deviation(0xFF)
+            self.transmitter._set_audio_deviation(self._audio_deviation)
             self.transmitter._set_pilot_deviation(0x0E)
 
             self.tuner._set_band('US_Europe')

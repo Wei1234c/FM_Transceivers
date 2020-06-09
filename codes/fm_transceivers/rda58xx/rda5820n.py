@@ -5,7 +5,7 @@ except:
 
 
 
-class RDA5820(RDA58xx):
+class RDA5820N(RDA58xx):
 
     def init(self):
         super().init()

@@ -1,6 +1,6 @@
 try:
     from utilities.adapters import peripherals
-    from fm_transceivers.rda58xx.rda5820_proxy import RDA5820_proxy
+    from fm_transceivers.rda58xx.rda5820n_proxy import RDA5820N_proxy
     import fx2lp
 
 
@@ -10,7 +10,7 @@ except:
 
     #  for ESP32 ===========================
     import peripherals
-    from rda5820_proxy import RDA5820_proxy
+    from rda5820n_proxy import RDA5820N_proxy
 
 
     with_hardware_device = True
@@ -23,9 +23,9 @@ except:
     bus = peripherals.I2C(_i2c)
     #  for ESP32 ===========================
 
-# rda = RDA5820_proxy(bus, freq = 97.7e6, work_mode = 'FM_Receiver')
-rda = RDA5820_proxy(bus, freq = 88.8e6, work_mode = 'FM_Transmitter', tx_power_dBm = 3)
-# rda = RDA5820_proxy(bus, work_mode = 'Audio_Amplifier')
+# rda = RDA5820N_proxy(bus, freq = 97.7e6, work_mode = 'FM_Receiver')
+rda = RDA5820N_proxy(bus, freq = 88.8e6, work_mode = 'FM_Transmitter', tx_power_dBm = 3)
+# rda = RDA5820N_proxy(bus, work_mode = 'Audio_Amplifier')
 
 # rda.set_work_mode(mode = 'Audio_Amplifier')
 

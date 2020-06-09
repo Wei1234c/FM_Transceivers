@@ -144,6 +144,19 @@ class Si4713_proxy:
 
     # =================== data access ======================
 
+    def _get_element_value(self, reg_address, idx_lowest_bit, n_bits):
+        reg_value = self.read_register(reg_address)
+        mask = 2 ** n_bits - 1
+        return reg_value >> idx_lowest_bit & mask
+
+
+    def _set_element_value(self, reg_address, idx_lowest_bit, n_bits, element_value, ):
+        reg_value = self.read_register(reg_address)
+        mask = 2 ** n_bits - 1
+        return reg_value & ~(mask << idx_lowest_bit) | ((element_value & mask) << idx_lowest_bit)
+
+    # =================== data access ======================
+
     def _read_bytes(self, n_bytes):
         return self._bus.read_bytes(self._i2c_address, n_bytes)
 
@@ -192,3 +205,5 @@ class Si4713_proxy:
                 self.write_register(address, value)
             except:
                 pass
+
+

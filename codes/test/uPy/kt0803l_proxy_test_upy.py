@@ -1,6 +1,6 @@
 try:
     from utilities.adapters import peripherals
-    from fm_transceivers.rda58xx.rda5820 import RDA5820
+    from fm_transceivers.kt08xx.kt0803l_proxy import KT0803L_proxy
     import fx2lp
 
 
@@ -10,7 +10,7 @@ except:
 
     #  for ESP32 ===========================
     import peripherals
-    from rda5820 import RDA5820
+    from kt0803l_proxy import KT0803L_proxy
 
 
     with_hardware_device = True
@@ -23,11 +23,9 @@ except:
     bus = peripherals.I2C(_i2c)
     #  for ESP32 ===========================
 
-# rda = RDA5820(bus, freq = 97.7e6, work_mode = 'FM_Receiver')
-rda = RDA5820(bus, freq = 88.8e6, work_mode = 'FM_Transmitter', tx_power_dBm = 3)
-# rda = RDA5820(bus, work_mode = 'Audio_Amplifier')
+kt = KT0803L_proxy(bus, freq = 88.8e6, emphasis_us = 75, audio_deviation = 112.5e3,
+                   input_level_dB = 12, tx_power_dBuV = 108)
 
-# rda.set_work_mode(mode = 'Audio_Amplifier')
-
-print('frequency:', rda.frequency)
-print('tx_power:', rda.transmitter.tx_power)
+kt.power_down()
+print('frequency:', kt.frequency)
+print('tx_power:', kt.tx_power)

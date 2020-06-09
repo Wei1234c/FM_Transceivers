@@ -27,7 +27,7 @@ class Si47xx(Device):
     FREQ_MAX = int(108e6)
     FREQ_STEP = int(50e3)
 
-    PRE_EMPHASIS = {75: 0, 50: 1, None: 2}
+    EMPHASIS = {75: 0, 50: 1, None: 2}
     MAX_LINE_INPUT_LEVELS_mV_pk = {0: 190, 1: 301, 2: 416, 3: 636}
     AUDIO_DYNAMIC_RANGE_CONTROL_GAIN_dB = 15
     AUDIO_DYNAMIC_RANGE_CONTROL_ATTACK_TIMES = {0.5: 0, 1: 1, 1.5: 2, 2: 3, 2.5: 4, 3: 5, 3.5: 6, 4: 7, 4.5: 8, 5: 9}
@@ -474,7 +474,7 @@ class Si47xx(Device):
 
 
         def _set_pre_emphasis(self, pre_emphasis_us = 75):
-            self._parent.io._write_register_by_name('TX_PREEMPHASIS', self._parent.PRE_EMPHASIS[pre_emphasis_us])
+            self._parent.io._write_register_by_name('TX_PREEMPHASIS', self._parent.EMPHASIS[pre_emphasis_us])
 
 
         def _set_pilot(self, freq_Hz = 19e3, deviation_Hz = 6.75e3):

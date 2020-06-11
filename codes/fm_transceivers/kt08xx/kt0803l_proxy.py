@@ -19,9 +19,24 @@ class KT0803L_proxy(Si4713_proxy):
                            0x1e, 0x26, 0x27,)
     REG_ADDRESS_MAX = max(REGISTERS_ADDRESSES)
 
-    DEFAULT_REGISTERS_VALUES = ((0x00, 0x5c), (0x01, 0xfb), (0x02, 0x44), (0x04, 0x82), (0x0b, 0x00), (0x0c, 0x00),
-                                (0x0e, 0x02), (0x0f, 0x00), (0x10, 0x00), (0x12, 0x00), (0x13, 0x80), (0x14, 0x00),
-                                (0x15, 0xe0), (0x16, 0x00), (0x17, 0x60), (0x1e, 0x00), (0x26, 0x80), (0x27, 0x00))
+    DEFAULT_REGISTERS_VALUES = ((0x00, 0x5c),
+                                (0x01, 0xc3),
+                                (0x02, 0x44),
+                                (0x04, 0x82),
+                                (0x0b, 0x00),
+                                (0x0c, 0x00),
+                                (0x0e, 0x02),
+                                (0x0f, 0x00),
+                                (0x10, 0x00),
+                                (0x12, 0x00),
+                                (0x13, 0x80),
+                                (0x14, 0x00),
+                                (0x15, 0xe0),
+                                (0x16, 0x00),
+                                (0x17, 0x20),
+                                (0x1e, 0x00),
+                                (0x26, 0x80),
+                                (0x27, 0x00))
     READ_ONLY_REGISTERS = [0x0F]
 
     FREQ_DEFAULT = 88.8e6
@@ -41,8 +56,8 @@ class KT0803L_proxy(Si4713_proxy):
 
 
     def __init__(self, bus, i2c_address = I2C_ADDRESS,
-                 freq = FREQ_DEFAULT, emphasis_us = 75, audio_deviation = 112.5e3,
-                 input_level_dB = 12, tx_power_dBuV = 108):
+                 freq = FREQ_DEFAULT, emphasis_us = 75, audio_deviation = 75e3,
+                 input_level_dB = 0, tx_power_dBuV = 108):
 
         self._bus = bus
         self._i2c_address = i2c_address

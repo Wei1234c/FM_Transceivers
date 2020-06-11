@@ -29,6 +29,10 @@ class Device(interfaces.Device):
         raise NotImplementedError()
 
 
+    def print_register_by_address(self, register_address):
+        self._read_register_by_address(register_address).print()
+
+
     @property
     def frequency(self):
         raise NotImplementedError()

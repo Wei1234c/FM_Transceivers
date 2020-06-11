@@ -169,6 +169,7 @@ class RDA58xx(Device):
 
 
     class _DigitalIO(_Base):
+
         # todo: test I2S interface
 
         @property
@@ -517,6 +518,7 @@ class RDA58xx(Device):
 
 
     class _RDS(_Base):
+
         # todo: implement RDS.
 
         def set_ps(self, station_name):
@@ -586,7 +588,7 @@ class RDA58xx(Device):
     def __init__(self, bus, i2c_address = I2C_ADDRESS, ref_freq = FREQ_REF,
                  work_mode = 'FM_Receiver',
                  freq = FREQ_DEFAULT, emphasis_us = 75, audio_deviation = 0xFF,
-                 input_level_v = 0.15, adc_gain = 7,  tx_power_dBm = 3, volume = 1,
+                 input_level_v = 0.6, adc_gain = 7, tx_power_dBm = 3, volume = 1,
                  registers_map = None, registers_values = None,
                  timeout_seconds = 0.2, seek_timeout_seconds = 5):
 
@@ -740,10 +742,6 @@ class RDA58xx(Device):
     def enable_output(self, value = True):
         self._action = 'enable_output: {}'.format(value)
         self.mute(not value)
-
-
-    def print_register(self, register_address):
-        self._read_register_by_address(register_address).print()
 
 
     # =================================================================

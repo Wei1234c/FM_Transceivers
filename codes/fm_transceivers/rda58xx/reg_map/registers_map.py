@@ -409,7 +409,7 @@ def _get_registers_map():
                       (0x0F, 0x5805),
                       (0x41, 0x093F),
                       (0x67, 0x0E10),
-                      (0x68, 0x1FFF))
+                      (0x68, 0x0fff))
 
     for addr, value in default_values:
         regs_map.registers_by_address[addr].default_value = value

@@ -20,9 +20,19 @@ class RDA5820N_proxy(Si4713_proxy):
 
     REGISTERS_ADDRESSES = (0, 2, 3, 4, 5, 6, 7, 10, 11, 12, 13, 14, 15, 64, 65, 103, 104)
 
-    # DEFAULT_REGISTERS_VALUES = ((0, 22560), (2, 53761), (3, 6864), (4, 17408), (5, 34945), (6, 2048), (7, 24262),
-    #                             (11, 0), (12, 22560), (13, 22560), (14, 22533), (15, 22533), (64, 1),
-    #                             (65, 2367), (103, 3600), (104, 8191))
+    # DEFAULT_REGISTERS_VALUES = ((0x00, 0x5820),
+    #                             (0x04, 0x4400),
+    #                             (0x05, 0x8881),
+    #                             (0x06, 0x0800),
+    #                             (0x07, 0x5EC4),
+    #                             (0x0A, 0x0400),
+    #                             (0x0C, 0x5820),
+    #                             (0x0D, 0x5820),
+    #                             (0x0E, 0x5805),
+    #                             (0x0F, 0x5805),
+    #                             (0x41, 0x093F),
+    #                             (0x67, 0x0E10),
+    #                             (0x68, 0x0fff))
 
     FREQ_MIN = int(65e6)
     FREQ_MAX = int(115e6)
@@ -49,7 +59,7 @@ class RDA5820N_proxy(Si4713_proxy):
     def __init__(self, bus, i2c_address = I2C_ADDRESS,
                  work_mode = 'FM_Receiver',
                  freq = FREQ_DEFAULT, stereo = True, audio_deviation = 0xFF,
-                 input_level_v = 0.15, adc_gain = 7, tx_power_dBm = 3, volume = 1):
+                 input_level_v = 0.6, adc_gain = 7, tx_power_dBm = 3, volume = 1):
 
         self._bus = bus
         self._i2c_address = i2c_address
@@ -233,4 +243,3 @@ class RDA5820N_proxy(Si4713_proxy):
     def write_register(self, reg_address, value):
         return self._bus.write_addressed_bytes(self._i2c_address, reg_address,
                                                array('B', [value >> 8 & 0xFF, value & 0xFF]))
-

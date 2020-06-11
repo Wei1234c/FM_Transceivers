@@ -377,8 +377,8 @@ class KT08xx(Device):
 
 
     def __init__(self, bus, i2c_address = I2C_ADDRESS, ref_freq = FREQ_REF,
-                 freq = FREQ_DEFAULT, emphasis_us = 75, audio_deviation = 112.5e3,
-                 input_level_dB = 12, tx_power_dBuV = 108, bass_boost_level_dB = 11,
+                 freq = FREQ_DEFAULT, emphasis_us = 75, audio_deviation = 75e3,
+                 input_level_dB = 0, tx_power_dBuV = 108, bass_boost_level_dB = 11,
                  registers_map = None, registers_values = None):
 
         registers_map = _get_registers_map() if registers_map is None else registers_map
@@ -505,10 +505,6 @@ class KT08xx(Device):
             self.control.power_up()
         else:
             self.control.power_down()
-
-
-    def print_register(self, register_address):
-        self._read_register_by_address(register_address).print()
 
 
     # =================================================================

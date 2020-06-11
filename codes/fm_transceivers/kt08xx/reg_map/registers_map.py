@@ -444,7 +444,7 @@ def _get_registers_map():
     #                                     (0x27, 0x00))
 
     default_values = ((0x00, 0x5c),
-                      (0x01, 0xfb),
+                      (0x01, 0xc3),
                       (0x02, 0x44),
                       (0x04, 0x82),
                       (0x0b, 0x00),
@@ -457,7 +457,7 @@ def _get_registers_map():
                       (0x14, 0x00),
                       (0x15, 0xe0),
                       (0x16, 0x00),
-                      (0x17, 0x60),
+                      (0x17, 0x20),
                       (0x1e, 0x00),
                       (0x26, 0x80),
                       (0x27, 0x00))

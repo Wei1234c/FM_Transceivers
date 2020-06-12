@@ -50,7 +50,7 @@ class RDA58xx(Device):
 
     I2S_SAMPLING_RATES = {48e3: 8, 44.1e3: 7, 32e3: 6, 24e3: 5, 22.05e3: 4, 16e3: 3, 12e3: 2, 11.025e3: 1, 8e3: 0}
 
-    WORK_MODES = {'FM_Receiver': 0, 'FM_Transmitter': 1, 'Audio_Amplifier': 8, 'CODEC': 12, 'ADC': 14}
+    WORK_MODES = {'Receiver': 0, 'Transmitter': 1, 'Audio_Amplifier': 8, 'CODEC': 12, 'ADC': 14}
 
 
     class _Base:
@@ -231,9 +231,9 @@ class RDA58xx(Device):
             mono = self._parent._read_element_by_name('MONO').value
             st = self._parent._read_element_by_name('ST').value
 
-            if self._parent._work_mode == 'FM_Transmitter':
+            if self._parent._work_mode == 'Transmitter':
                 return mono == 0
-            if self._parent._work_mode == 'FM_Receiver':
+            if self._parent._work_mode == 'Receiver':
                 return mono == 0 and st == 1
 
 
@@ -494,7 +494,7 @@ class RDA58xx(Device):
 
 
         def noise_level_dBuV(self, freq, wait_seconds = 0.3):
-            assert self._parent._work_mode == 'FM_Receiver', 'Must be in FM_Receiver mode.'
+            assert self._parent._work_mode == 'Receiver', 'Must be in Receiver mode.'
             self._parent.tuner.set_frequency(freq)
             time.sleep(wait_seconds)
             return self.rssi
@@ -586,7 +586,7 @@ class RDA58xx(Device):
 
 
     def __init__(self, bus, i2c_address = I2C_ADDRESS, ref_freq = FREQ_REF,
-                 work_mode = 'FM_Receiver',
+                 work_mode = 'Receiver',
                  freq = FREQ_DEFAULT, emphasis_us = 75, audio_deviation = 0xFF,
                  input_level_v = 0.6, adc_gain = 7, tx_power_dBm = 3, volume = 1,
                  registers_map = None, registers_values = None,
@@ -634,8 +634,8 @@ class RDA58xx(Device):
         self.transmitter = self._Transmitter(self)
         self.tuner = self._Tuner(self)
 
-        self.components = {'FM_Receiver'    : self.receiver,
-                           'FM_Transmitter' : self.transmitter,
+        self.components = {'Receiver'    : self.receiver,
+                           'Transmitter' : self.transmitter,
                            'Audio_Amplifier': self.audio_amplifier,
                            'CODEC'          : self.codec,
                            'ADC'            : self.adc}
@@ -664,7 +664,7 @@ class RDA58xx(Device):
 
         self._active_component.set_volume(self._volume)
 
-        if self._work_mode in ('FM_Receiver', 'FM_Transmitter'):
+        if self._work_mode in ('Receiver', 'Transmitter'):
 
             self.io._enable_stc_interrupt(True)
 
@@ -696,7 +696,7 @@ class RDA58xx(Device):
         self.init()
 
 
-    def set_work_mode(self, mode = 'FM_Receiver'):
+    def set_work_mode(self, mode = 'Receiver'):
         self._work_mode = mode
         self.init()
 

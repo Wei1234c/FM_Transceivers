@@ -53,11 +53,11 @@ class RDA5820N_proxy(Si4713_proxy):
     PA_GAINS = {3: 0x3F, 0: 0x27, -1.47: 0x20, -3: 0x19, -32: 0}
     PA_GAINS_value_key = _value_key(PA_GAINS)
 
-    WORK_MODES = {'FM_Receiver': 0, 'FM_Transmitter': 1, 'Audio_Amplifier': 8, 'CODEC': 12, 'ADC': 14}
+    WORK_MODES = {'Receiver': 0, 'Transmitter': 1, 'Audio_Amplifier': 8, 'CODEC': 12, 'ADC': 14}
 
 
     def __init__(self, bus, i2c_address = I2C_ADDRESS,
-                 work_mode = 'FM_Receiver',
+                 work_mode = 'Receiver',
                  freq = FREQ_DEFAULT, stereo = True, audio_deviation = 0xFF,
                  input_level_v = 0.6, adc_gain = 7, tx_power_dBm = 3, volume = 1):
 
@@ -127,7 +127,7 @@ class RDA5820N_proxy(Si4713_proxy):
         self.power_up()
 
 
-    def set_work_mode(self, mode = 'FM_Receiver'):
+    def set_work_mode(self, mode = 'Receiver'):
         valids = self.WORK_MODES.keys()
         assert mode in valids, 'valid mode: {}'.format(valids)
 
@@ -163,7 +163,7 @@ class RDA5820N_proxy(Si4713_proxy):
 
 
     def seek(self, up = True):
-        if self._work_mode == 'FM_Receiver':
+        if self._work_mode == 'Receiver':
             self.write_register(0x02, self._set_element_value(0x02, 9, 1, int(bool(up))))
             self.write_register(0x02, self._set_element_value(0x02, 8, 1, 1))
             time.sleep(1)
@@ -195,7 +195,7 @@ class RDA5820N_proxy(Si4713_proxy):
 
 
     def mute(self, value = True):
-        if self._work_mode in ('FM_Receiver', 'FM_Transmitter'):
+        if self._work_mode in ('Receiver', 'Transmitter'):
             self.write_register(0x02, self._set_element_value(0x02, 14, 2, 0 if value else 3))
 
 
@@ -222,9 +222,9 @@ class RDA5820N_proxy(Si4713_proxy):
         mono = self._get_element_value(0x02, 13, 1)
         st = self._get_element_value(0x0A, 10, 1)
 
-        if self._work_mode == 'FM_Transmitter':
+        if self._work_mode == 'Transmitter':
             return mono == 0
-        if self._work_mode == 'FM_Receiver':
+        if self._work_mode == 'Receiver':
             return mono == 0 and st == 1
 
 

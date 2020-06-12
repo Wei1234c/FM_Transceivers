@@ -23,8 +23,8 @@ except:
     bus = peripherals.I2C(_i2c)
     #  for ESP32 ===========================
 
-# rda = RDA5820N(bus, freq = 97.7e6, work_mode = 'FM_Receiver')
-rda = RDA5820N(bus, freq = 88.8e6, work_mode = 'FM_Transmitter', tx_power_dBm = 3)
+# rda = RDA5820N(bus, freq = 97.7e6, work_mode = 'Receiver')
+rda = RDA5820N(bus, freq = 88.8e6, work_mode = 'Transmitter', tx_power_dBm = 3)
 # rda = RDA5820N(bus, work_mode = 'Audio_Amplifier')
 
 # rda.set_work_mode(mode = 'Audio_Amplifier')

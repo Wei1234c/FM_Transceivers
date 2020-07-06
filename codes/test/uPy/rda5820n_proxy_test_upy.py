@@ -24,7 +24,12 @@ except:
     #  for ESP32 ===========================
 
 # rda = RDA5820N_proxy(bus, freq = 97.7e6, work_mode = 'Receiver')
-rda = RDA5820N_proxy(bus, freq = 88.8e6, work_mode = 'Transmitter', tx_power_dBm = 3)
+
+freq = 88.8e6
+# freq = 88.0e6
+
+rda = RDA5820N_proxy(bus, freq = freq, work_mode = 'Transmitter', tx_power_dBm = 3)
+
 # rda = RDA5820N_proxy(bus, work_mode = 'Audio_Amplifier')
 
 # rda.set_work_mode(mode = 'Audio_Amplifier')

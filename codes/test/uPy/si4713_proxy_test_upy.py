@@ -26,6 +26,7 @@ except:
     #  for ESP32 ===========================
 
 freq = 88.8e6
+# freq = 88.0e6
 
 si = Si4713_proxy(bus = bus, pin_reset = pin_reset, freq = freq)
 

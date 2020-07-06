@@ -23,7 +23,10 @@ except:
     bus = peripherals.I2C(_i2c)
     #  for ESP32 ===========================
 
-kt = KT0803L_proxy(bus, freq = 88.8e6, emphasis_us = 75, audio_deviation = 112.5e3,
+freq = 88.8e6
+# freq = 88.0e6
+
+kt = KT0803L_proxy(bus, freq = freq, emphasis_us = 75, audio_deviation = 112.5e3,
                    input_level_dB = 12, tx_power_dBuV = 108)
 
 kt.power_down()

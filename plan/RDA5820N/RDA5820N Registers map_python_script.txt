@@ -1,0 +1,370 @@
+def _get_all_registers():
+
+	registers = []
+
+	registers.append(Register(name = '0x00', address = 0, description = '''0x00''', 
+elements = [Element(name = 'CHIPID', idx_lowest_bit = 0, n_bits = 16, value = 0, 
+description = '''Chip ID.'''), 
+], default_value = 0))
+
+	registers.append(Register(name = '0x02', address = 2, description = '''0x02''', 
+elements = [Element(name = 'DHIZ', idx_lowest_bit = 15, n_bits = 1, value = 0, 
+description = '''Audio Output High-Z Disable.
+0 = High impedance;
+1 = Normal operation'''), 
+Element(name = 'DMUTE', idx_lowest_bit = 14, n_bits = 1, value = 0, 
+description = '''Mute Disable.
+0 = Mute; 
+1 = Normal operation'''), 
+Element(name = 'MONO', idx_lowest_bit = 13, n_bits = 1, value = 0, 
+description = '''Mono Select.
+0 = Stereo; 
+1 = Force mono'''), 
+Element(name = 'BASS', idx_lowest_bit = 12, n_bits = 1, value = 0, 
+description = '''Bass Boost.
+0 = Disabled; 
+1 = Bass boost enabled'''), 
+Element(name = 'RCLK_NON_CALIBRATE_MODE', idx_lowest_bit = 11, n_bits = 1, value = 0, 
+description = '''0=RCLK clock is always supply
+1=RCLK clock is not always supply when FM work ( when 1, RDA5820NS can't directly support -20 degree C ~ 70 degree C temperature. Only suppory -20~+20 degree C temperature swing  from tune point)'''), 
+Element(name = 'RCLK_DIRECT_INPUT_MODE', idx_lowest_bit = 10, n_bits = 1, value = 0, 
+description = '''1=RCLK clock use the directly input mode'''), 
+Element(name = 'SEEKUP', idx_lowest_bit = 9, n_bits = 1, value = 0, 
+description = '''Seek Up.
+0 = Seek down; 
+1 = Seek up'''), 
+Element(name = 'SEEK', idx_lowest_bit = 8, n_bits = 1, value = 0, 
+description = '''Seek.
+0 = Disable stop seek; 
+1 = Enable
+Seek begins in the direction specified by SEEKUP and ends when a channel is found, or the entire band has been searched.
+The SEEK bit is set low and the STC bit is set high when the seek operation completes.'''), 
+Element(name = 'SKMODE', idx_lowest_bit = 7, n_bits = 1, value = 0, 
+description = '''Seek Mode
+0 = wrap at the upper or lower band limit and continue seeking
+1 = stop seeking at the upper or lower band limit '''), 
+Element(name = 'CLK_MODE', idx_lowest_bit = 4, n_bits = 3, value = 0, 
+description = '''000=32.768kHz
+001=12Mhz
+101=24Mhz
+010=13Mhz
+110=26Mhz
+011=19.2Mhz
+111=38.4Mhz'''), 
+Element(name = 'RDS_EN', idx_lowest_bit = 3, n_bits = 1, value = 0, 
+description = '''RDS/RBDS enable
+If 1, RDS/RBDS enable '''), 
+Element(name = 'Reserved_2', idx_lowest_bit = 2, n_bits = 1, value = 0, read_only = True,
+description = '''Reserved'''), 
+Element(name = 'SOFT_RESET', idx_lowest_bit = 1, n_bits = 1, value = 0, 
+description = '''Soft reset.
+If 0, not reset;
+If 1, reset.'''), 
+Element(name = 'ENABLE', idx_lowest_bit = 0, n_bits = 1, value = 0, 
+description = '''Power Up Enable.
+0 = Disabled; 1 = Enabled'''), 
+], default_value = 0))
+
+	registers.append(Register(name = '0x03', address = 3, description = '''0x03''', 
+elements = [Element(name = 'CHAN', idx_lowest_bit = 6, n_bits = 10, value = 0, 
+description = '''Channel Select. BAND = 0
+Frequency = Channel Spacing (kHz) x CHAN+ 87.0 MHz
+BAND = 1or 2
+Frequency = Channel Spacing (kHz) x CHAN + 76.0 MHz
+BAND = 3
+Frequency = Channel Spacing (kHz) x CHAN + 65.0 MHz
+CHAN is updated after a seek operation.'''), 
+Element(name = 'DIRECT_MODE', idx_lowest_bit = 5, n_bits = 1, value = 0, 
+description = '''Directly Control Mode, Only used when test.'''), 
+Element(name = 'TUNE', idx_lowest_bit = 4, n_bits = 1, value = 0, 
+description = '''Tune
+0 = Disable
+1 = Enable
+The tune operation begins when the TUNE bit is set high.
+The STC bit is set high when the tune operation completes.
+The tune bit is reset to low automatically when the tune operation completes..'''), 
+Element(name = 'BAND', idx_lowest_bit = 2, n_bits = 2, value = 0, 
+description = '''Band Select.
+00 = 87 ~ 108 MHz (US/Europe)
+01 = 76 ~ 91 MHz (Japan)
+10 = 76 ~ 108 MHz (world wide)
+113 = 65 ~ 76 MHz (East Europe) or 50-65MHz'''), 
+Element(name = 'SPACE', idx_lowest_bit = 0, n_bits = 2, value = 0, 
+description = '''Channel Spacing. 00 = 100 kHz
+01 = 200 kHz
+10 = 50kHz
+11 = 25KHz'''), 
+], default_value = 0))
+
+	registers.append(Register(name = '0x04', address = 4, description = '''0x04''', 
+elements = [Element(name = 'RDSIEN', idx_lowest_bit = 15, n_bits = 1, value = 0, 
+description = '''RDS ready Interrupt Enable.
+0 = Disable Interrupt 
+1 = Enable Interrupt
+Setting STCIEN = 1 will generate a low pulse on GPIO2 when the interrupt occurs.'''), 
+Element(name = 'STCIEN', idx_lowest_bit = 14, n_bits = 1, value = 0, 
+description = '''Seek/Tune Complete Interrupt Enable.
+0 = Disable Interrupt 
+1 = Enable Interrupt
+Setting STCIEN = 1 will generate a low pulse on GPIO2
+when the interrupt occurs.'''), 
+Element(name = 'RBDS', idx_lowest_bit = 13, n_bits = 1, value = 0, 
+description = '''1 = RBDS mode enable
+0 = RDS mode only'''), 
+Element(name = 'RDS_FIFO_EN', idx_lowest_bit = 12, n_bits = 1, value = 0, 
+description = '''1 = RDS fifo mode enable.'''), 
+Element(name = 'DE', idx_lowest_bit = 11, n_bits = 1, value = 0, 
+description = '''De-emphasis.
+0 = 75 us; 
+1 = 50 us; '''), 
+Element(name = 'RDS_FIFO_CLR', idx_lowest_bit = 10, n_bits = 1, value = 0, 
+description = '''1 = clear RDS fifo'''), 
+Element(name = 'SOFTMUTE_EN', idx_lowest_bit = 9, n_bits = 1, value = 0, 
+description = '''If 1, softmute enable'''), 
+Element(name = 'AFCD', idx_lowest_bit = 8, n_bits = 1, value = 0, 
+description = '''AFC disable.
+If 0, afc work;
+If 1, afc disabled.'''), 
+Element(name = 'Reserved_7', idx_lowest_bit = 7, n_bits = 1, value = 0, read_only = True,
+description = '''Reserved'''), 
+Element(name = 'I2S_ENABLED', idx_lowest_bit = 6, n_bits = 1, value = 0, 
+description = '''I2S bus enable
+If 0, disabled;
+If 1, enabled.'''), 
+Element(name = 'GPIO3', idx_lowest_bit = 4, n_bits = 2, value = 0, 
+description = '''General Purpose I/O 3.
+00 = High impedance
+01 = Mono/Stereo indicator (ST) 10 = Low
+11 = High'''), 
+Element(name = 'GPIO2', idx_lowest_bit = 2, n_bits = 2, value = 0, 
+description = '''General Purpose I/O 2. 
+00 = High impedance 
+01 = Interrupt (INT) 
+10 = Low
+11 = High'''), 
+Element(name = 'GPIO1', idx_lowest_bit = 0, n_bits = 2, value = 0, 
+description = '''General Purpose I/O 1. 00 = High impedance 01 = Reserved
+10 = Low
+11 = High'''), 
+], default_value = 0))
+
+	registers.append(Register(name = '0x05', address = 5, description = '''0x05''', 
+elements = [Element(name = 'INT_MODE', idx_lowest_bit = 15, n_bits = 1, value = 0, 
+description = '''If 0, generate 5ms interrupt;
+If 1, interrupt last until read reg0CH action occurs.'''), 
+Element(name = 'SEEK_MODE', idx_lowest_bit = 13, n_bits = 2, value = 0, 
+description = '''01= adjacent seek process && noise condition
+10= adjacent seek process || noise condition'''), 
+Element(name = 'Reserved_12', idx_lowest_bit = 12, n_bits = 1, value = 0, read_only = True,
+description = '''Reserved'''), 
+Element(name = 'SEEKTH', idx_lowest_bit = 8, n_bits = 4, value = 0, 
+description = '''Seek SNR threshold value: Noise_th(dB) = 79 - seek_th'''), 
+Element(name = 'LNA_PORT_SEL', idx_lowest_bit = 6, n_bits = 2, value = 0, 
+description = '''LNA input port selection bit:
+00: no input
+01: LNAN
+10: LNAP
+11: dual port input'''), 
+Element(name = 'Reserved_4', idx_lowest_bit = 4, n_bits = 2, value = 0, read_only = True,
+description = '''Reserved'''), 
+Element(name = 'VOLUME', idx_lowest_bit = 0, n_bits = 4, value = 0, 
+description = '''DAC Gain Control Bits (Volume). 
+0000=min; 
+1111=max
+Volume scale is logarithmic
+When 0000, output mute and output impedance is very large'''), 
+], default_value = 0))
+
+	registers.append(Register(name = '0x06', address = 6, description = '''0x06''', 
+elements = [Element(name = 'Reserved_13', idx_lowest_bit = 13, n_bits = 3, value = 0, read_only = True,
+description = '''reserved'''), 
+Element(name = 'I2S_MODE', idx_lowest_bit = 12, n_bits = 1, value = 0, 
+description = '''If 0, master mode;
+If 1, slave mode.'''), 
+Element(name = 'SW_LR', idx_lowest_bit = 11, n_bits = 1, value = 0, 
+description = '''Ws relation to l/r channel.
+If 0, ws=0 ->r, ws=1 ->l;
+If 1, ws=0 ->l, ws=1 ->r.'''), 
+Element(name = 'SCLK_I_EDGE', idx_lowest_bit = 10, n_bits = 1, value = 0, 
+description = '''When I2S enable
+If 0, use normal sclk internally; 
+If 1, inverte sclk internally.'''), 
+Element(name = 'DATA_SIGNED', idx_lowest_bit = 9, n_bits = 1, value = 0, 
+description = '''If 0, I2S output unsigned 16-bit audio data.
+If 1, I2S output signed 16-bit audio data.'''), 
+Element(name = 'WS_I_EDGE', idx_lowest_bit = 8, n_bits = 1, value = 0, 
+description = '''If 0, use normal ws internally;
+If 1, inverte ws internally.'''), 
+Element(name = 'I2S_SW_CNT', idx_lowest_bit = 4, n_bits = 4, value = 0, 
+description = '''4'b1000: WS_STEP_48;
+4'b0111: WS_STEP=44.1kbps;
+4'b0110: WS_STEP=32kbps;
+4'b0101: WS_STEP=24kbps;
+4'b0100: WS_STEP=22.05kbps;
+4'b0011: WS_STEP=16kbps;
+4'b0010: WS_STEP=12kbps;
+4'b0001: WS_STEP=11.025kbps;
+4'b0000: WS_STEP=8kbps;'''), 
+Element(name = 'SW_O_EDGE', idx_lowest_bit = 3, n_bits = 1, value = 0, 
+description = '''If 1, invert ws output when as master.'''), 
+Element(name = 'SCLK_O_EDGE', idx_lowest_bit = 2, n_bits = 1, value = 0, 
+description = '''If 1, invert sclk output when as master.'''), 
+Element(name = 'L_DELY', idx_lowest_bit = 1, n_bits = 1, value = 0, 
+description = '''If 1, L channel data delay 1T.'''), 
+Element(name = 'R_DELY', idx_lowest_bit = 0, n_bits = 1, value = 0, 
+description = '''If 1, R channel data delay 1T.'''), 
+], default_value = 0))
+
+	registers.append(Register(name = '0x07', address = 7, description = '''0x07''', 
+elements = [Element(name = 'Reserved_15', idx_lowest_bit = 15, n_bits = 1, value = 0, read_only = True,
+description = '''Must be 0'''), 
+Element(name = 'TH_SOFRBLEND', idx_lowest_bit = 10, n_bits = 5, value = 0, 
+description = '''Softblend threshold setting for noise.
+If (127-noise_db2)>4*th, turn soft blend off.'''), 
+Element(name = '65M_50M_MODE', idx_lowest_bit = 9, n_bits = 1, value = 0, 
+description = '''Valid when band[1:0] = 2'b11 (0x03H_bit<3:2>) 1 = 65~76 MHz;
+0 = 50~76 MHz.'''), 
+Element(name = 'Reserved_8', idx_lowest_bit = 8, n_bits = 1, value = 0, read_only = True,
+description = '''Reserved'''), 
+Element(name = 'SEEK_TH_OLD', idx_lowest_bit = 2, n_bits = 6, value = 0, 
+description = '''Seek threshold for old seek mode, Valid when
+Seek_Mode=01'''), 
+Element(name = 'SOFTBLEND_EN', idx_lowest_bit = 1, n_bits = 1, value = 0, 
+description = '''If 1, Softblend enable'''), 
+Element(name = 'FREQ_MODE', idx_lowest_bit = 0, n_bits = 1, value = 0, 
+description = '''If 1, then freq setting changed.
+Freq = 76000(or 87000) kHz + freq_direct (08H) kHz.'''), 
+], default_value = 0))
+
+	registers.append(Register(name = '0x0A', address = 10, description = '''0x0A''', 
+elements = [Element(name = 'RDSR', idx_lowest_bit = 15, n_bits = 1, value = 0, 
+description = '''RDS ready
+0 = No RDS/RBDS group ready(default) 
+1 = New RDS/RBDS group ready'''), 
+Element(name = 'STC', idx_lowest_bit = 14, n_bits = 1, value = 0, 
+description = '''Seek/Tune Complete.
+0 = Not complete 
+1 = Complete
+The seek/tune complete flag is set when the seek or tune
+operation completes.'''), 
+Element(name = 'SF', idx_lowest_bit = 13, n_bits = 1, value = 0, 
+description = '''Seek Fail.
+0 = Seek successful; 
+1 = Seek failure
+The seek fail flag is set when the seek operation fails to find a channel with an RSSI level greater than
+SEEKTH[5:0].'''), 
+Element(name = 'RDSS', idx_lowest_bit = 12, n_bits = 1, value = 0, 
+description = '''RDS Synchronization'''), 
+Element(name = 'BLK_E', idx_lowest_bit = 11, n_bits = 1, value = 0, 
+description = '''When RDS enable:
+1 = Block E has been found
+0 = no Block E has been found'''), 
+Element(name = 'ST', idx_lowest_bit = 10, n_bits = 1, value = 0, 
+description = '''Stereo Indicator.
+0 = Mono; 
+1 = Stereo
+Stereo indication is available on GPIO3 by setting
+GPIO3[1:0] =01.'''), 
+Element(name = 'READCHAN', idx_lowest_bit = 0, n_bits = 10, value = 0, 
+description = '''Read Channel.
+BAND = 0
+Frequency = Channel Spacing (kHz) x READCHAN[9:0]+
+87.0 MHz BAND = 1 or 2
+Frequency = Channel Spacing (kHz) x READCHAN[9:0]+
+76.0 MHz BAND = 3
+Frequency = Channel Spacing (kHz) x READCHAN[9:0]+
+65.0 MHz
+READCHAN[9:0] is updated after a tune or seek operation.'''), 
+], default_value = 0))
+
+	registers.append(Register(name = '0x0B', address = 11, description = '''0x0B''', 
+elements = [Element(name = 'RSSI', idx_lowest_bit = 9, n_bits = 7, value = 0, 
+description = '''RSSI.
+000000 = min
+111111 = max
+RSSI scale is logarithmic.'''), 
+Element(name = 'FM_TRUE', idx_lowest_bit = 8, n_bits = 1, value = 0, 
+description = '''1 = the current channel is a station
+0 = the current channel is not a station'''), 
+Element(name = 'FM_READY', idx_lowest_bit = 7, n_bits = 1, value = 0, 
+description = '''1=ready
+0=not ready'''), 
+Element(name = 'Reserved_5', idx_lowest_bit = 5, n_bits = 2, value = 0, read_only = True,
+description = '''Reserved'''), 
+Element(name = 'ABCD_E', idx_lowest_bit = 4, n_bits = 1, value = 0, 
+description = '''1= the block id of register 0cH,0dH,0eH,0fH is E
+0= the block id of register 0cH, 0dH, 0eH,0fH is A, B, C, D'''), 
+Element(name = 'BLERA', idx_lowest_bit = 2, n_bits = 2, value = 0, 
+description = '''Block Errors Level of RDS_DATA_0, and is always read as Errors Level of RDS BLOCK A (in RDS mode) or BLOCK E (in RBDS mode when ABCD_E flag is 1)
+00= 0 errors requiring correction 01= 1~2 errors requiring correction 10= 3~5 errors requiring correction
+11= 6+ errors or error in checkword, correction not
+possible.
+Available only in RDS Verbose mode'''), 
+Element(name = 'BLERB', idx_lowest_bit = 0, n_bits = 2, value = 0, 
+description = '''Block Errors Level of RDS_DATA_1, and is always read as Errors Level of RDS BLOCK B (in RDS mode ) or E (in RBDS mode when ABCD_E flag is 1).
+00= 0 errors requiring correction 01= 1~2 errors requiring correction 10= 3~5 errors requiring correction
+11= 6+ errors or error in checkword, correction not possible.
+Available only in RDS Verbose mode'''), 
+], default_value = 0))
+
+	registers.append(Register(name = '0x0C', address = 12, description = '''0x0C''', 
+elements = [Element(name = 'RDSA', idx_lowest_bit = 0, n_bits = 16, value = 0, 
+description = '''BLOCK A ( in RDS mode) or BLOCK E (in RBDS mode when ABCD_E flag is 1)'''), 
+], default_value = 0))
+
+	registers.append(Register(name = '0x0D', address = 13, description = '''0x0D''', 
+elements = [Element(name = 'RDSB', idx_lowest_bit = 0, n_bits = 16, value = 0, 
+description = '''BLOCK B ( in RDS mode) or BLOCK E (in RBDS mode when ABCD_E flag is 1)'''), 
+], default_value = 0))
+
+	registers.append(Register(name = '0x0E', address = 14, description = '''0x0E''', 
+elements = [Element(name = 'RDSC', idx_lowest_bit = 0, n_bits = 16, value = 0, 
+description = '''BLOCK C ( in RDS mode) or BLOCK E (in RBDS mode when ABCD_E flag is 1)'''), 
+], default_value = 0))
+
+	registers.append(Register(name = '0x0F', address = 15, description = '''0x0F''', 
+elements = [Element(name = 'RDSD', idx_lowest_bit = 0, n_bits = 16, value = 0, 
+description = '''BLOCK D ( in RDS mode) or BLOCK E (in RBDS mode when ABCD_E flag is 1)'''), 
+], default_value = 0))
+
+	registers.append(Register(name = '0x40', address = 64, description = '''0x40''', 
+elements = [Element(name = 'Reserved_4', idx_lowest_bit = 4, n_bits = 12, value = 0, read_only = True,
+description = '''Reserved'''), 
+Element(name = 'WORK_MODE', idx_lowest_bit = 0, n_bits = 4, value = 0, 
+description = '''0000 = FM Receive
+0001 = FM Transmit 
+1000 = Audio Amplify 
+1100 = Codec 
+1110 = ADC'''), 
+], default_value = 0))
+
+	registers.append(Register(name = '0x41', address = 65, description = '''0x41''', 
+elements = [Element(name = 'Reserved_12', idx_lowest_bit = 12, n_bits = 4, value = 0, read_only = True,
+description = '''Reserved'''), 
+Element(name = 'TXPA_VCOM', idx_lowest_bit = 9, n_bits = 3, value = 0, 
+description = '''TXPA Common Voltage'''), 
+Element(name = 'TXPA_IBIT', idx_lowest_bit = 6, n_bits = 3, value = 0, 
+description = '''TXPA Bias Current'''), 
+Element(name = 'TXPA_GAIN', idx_lowest_bit = 0, n_bits = 6, value = 0, 
+description = '''TXPA Gain Bit'''), 
+], default_value = 0))
+
+	registers.append(Register(name = '0x67', address = 103, description = '''0x67''', 
+elements = [Element(name = 'FMTX_PILOT_DEV', idx_lowest_bit = 8, n_bits = 8, value = 0, 
+description = '''FM Transmit Pilot Tone Modulate Parameter'''), 
+Element(name = 'FMTX_RDS__DEV', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''FM Transmit RDS Signal Modulate Parameter'''), 
+], default_value = 0))
+
+	registers.append(Register(name = '0x68', address = 104, description = '''0x68''', 
+elements = [Element(name = 'Reserved_14', idx_lowest_bit = 14, n_bits = 2, value = 0, read_only = True,
+description = '''Reserved'''), 
+Element(name = 'FMTX_PGA_GAIN', idx_lowest_bit = 11, n_bits = 3, value = 0, 
+description = '''FM Transmit PGA Gain Bit'''), 
+Element(name = 'FMTX_ADC_GAIN', idx_lowest_bit = 8, n_bits = 3, value = 0, 
+description = '''FM Transmit ADC Gain Bit'''), 
+Element(name = 'FMTX_AUDIO_DEV', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''FM Transmit Audio Signal Modulate Parameter'''), 
+], default_value = 0))
+
+	return registers

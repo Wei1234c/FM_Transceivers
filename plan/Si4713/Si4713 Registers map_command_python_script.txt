@@ -1,0 +1,532 @@
+def _get_all_commands():
+
+	commands = []
+
+	commands.append(Command(name = 'POWER_UP', code = 1, 
+description = '''Initiates the boot process to move the device from powerdown to powerup mode. The boot can occur from internal device memory or a system controller downloaded patch. To confirm that the patch is compatible with the internal device library revision, the library revision should be confirmed by issuing the POWER_UP command with Function = 15 (query library ID). The device will return the response, including the library revision, and then moves into powerdown mode. The device can then be placed in powerup mode by issuing the POWER_UP command with Function = 2 (transmit) and the patch may be applied. Only the STATUS byte will be returned in the response stream in transmit mode. The POWER_UP command configures the state of DIN (pin 13), DFS (pin 14), and RIN (pin 15) and LIN (pin 16) for analog or digital audio modes and GPO2/INT (pin 18) for interrupt operation. The command configures GPO2/INT interrupts (GPO2OEN) and CTS interrupts (CTSIEN). If both are enabled, GPO2/INT is driven high during normal operation and low for a minimum of 1 £gs during the interrupt. The CTSIEN bit is duplicated in the GPO_IEN property. The command is complete when the CTS bit (and optional interrupt) is set.
+Note: To change function (e.g., FM TX to FM RX), issue the POWER_DOWN command to stop the current function; then, issue POWER_UP to start the new function.''', 
+arguments = 	 [
+	Register(name = 'POWER_UP_argument_1', address = 1, 
+elements = [Element(name = 'CTSIEN', idx_lowest_bit = 7, n_bits = 1, value = 0, 
+description = '''CTS Interrupt Enable.
+0 = CTS interrupt disabled. 
+1 = CTS interrupt enabled.'''), 
+Element(name = 'GPO2OEN', idx_lowest_bit = 6, n_bits = 1, value = 0, 
+description = '''GPO2 Output Enable.
+0 = GPO2 output disabled, (Hi-Z). 
+1 = GPO2 output enabled.'''), 
+Element(name = 'PATCH', idx_lowest_bit = 5, n_bits = 1, value = 0, 
+description = '''Patch Enable.
+0 = Boot normally
+1 = Copy non-volatile memory to RAM, but do not boot. After CTS has been set, RAM may be patched'''), 
+Element(name = 'XOSCEN', idx_lowest_bit = 4, n_bits = 1, value = 0, 
+description = '''Crystal Oscillator Enable.
+0 = Use external RCLK (crystal oscillator disabled).
+1 = Use crystal oscillator (RCLK and GPO3/DCLK with external 32.768 kHz crys- tal and OPMODE=01010000).
+See Si47xx Data Sheet Application Schematic for external BOM details.'''), 
+Element(name = 'FUNC', idx_lowest_bit = 0, n_bits = 4, value = 0, 
+description = '''Function.
+0~1, 3~14 = Reserved.
+2 = Transmit.
+15 = Query Library ID.'''), 
+], default_value = 0), 
+	Register(name = 'POWER_UP_argument_2', address = 2, 
+elements = [Element(name = 'OPMODE', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Application Setting
+01010000 = Analog audio inputs (LIN/RIN) 
+00001111 = Digital audio inputs (DIN/DFS/DCLK)'''), 
+], default_value = 0)], 
+responses = 	 [
+	Register(name = 'POWER_UP_response_1', address = 1, 
+elements = [Element(name = 'PN', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Final 2 digits of part number.'''), 
+], default_value = 0), 
+	Register(name = 'POWER_UP_response_2', address = 2, 
+elements = [Element(name = 'FWMAJOR', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Firmware Major Revision.'''), 
+], default_value = 0), 
+	Register(name = 'POWER_UP_response_3', address = 3, 
+elements = [Element(name = 'FWMINOR', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Firmware Minor Revision.'''), 
+], default_value = 0), 
+	Register(name = 'POWER_UP_response_4', address = 4, 
+elements = [Element(name = 'Reserved_0', idx_lowest_bit = 0, n_bits = 8, value = 0, read_only = True,
+description = '''Reserved, various values.'''), 
+], default_value = 0), 
+	Register(name = 'POWER_UP_response_5', address = 5, 
+elements = [Element(name = 'Reserved_0', idx_lowest_bit = 0, n_bits = 8, value = 0, read_only = True,
+description = '''Reserved, various values.'''), 
+], default_value = 0), 
+	Register(name = 'POWER_UP_response_6', address = 6, 
+elements = [Element(name = 'CHIPREV', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Chip Revision.'''), 
+], default_value = 0), 
+	Register(name = 'POWER_UP_response_7', address = 7, 
+elements = [Element(name = 'LIBRARYID', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Library Revision.
+
+'''), 
+], default_value = 0)]))
+
+	commands.append(Command(name = 'GET_REV', code = 16, 
+description = '''Returns the part number, chip revision, firmware revision, patch revision and component revision numbers. The command is complete when the CTS bit (and optional interrupt) is set. This command may only be sent when in powerup mode.''', 
+arguments = [], 
+responses = 	 [
+	Register(name = 'GET_REV_response_1', address = 1, 
+elements = [Element(name = 'PN', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Final 2 digits of Part Number'''), 
+], default_value = 0), 
+	Register(name = 'GET_REV_response_2', address = 2, 
+elements = [Element(name = 'FWMAJOR', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Firmware Major Revision'''), 
+], default_value = 0), 
+	Register(name = 'GET_REV_response_3', address = 3, 
+elements = [Element(name = 'FWMINOR', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Firmware Minor Revision'''), 
+], default_value = 0), 
+	Register(name = 'GET_REV_response_4', address = 4, 
+elements = [Element(name = 'PATCHH', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Patch ID High Byte'''), 
+], default_value = 0), 
+	Register(name = 'GET_REV_response_5', address = 5, 
+elements = [Element(name = 'PATCHL', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Patch ID Low Byte'''), 
+], default_value = 0), 
+	Register(name = 'GET_REV_response_6', address = 6, 
+elements = [Element(name = 'CMPMAJOR', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Component Major Revision'''), 
+], default_value = 0), 
+	Register(name = 'GET_REV_response_7', address = 7, 
+elements = [Element(name = 'CMPMINOR', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Component Minor Revision'''), 
+], default_value = 0), 
+	Register(name = 'GET_REV_response_8', address = 8, 
+elements = [Element(name = 'CHIPREV', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Chip Revision.
+
+
+
+'''), 
+], default_value = 0)]))
+
+	commands.append(Command(name = 'POWER_DOWN', code = 17, 
+description = '''Moves the device from powerup to powerdown mode. The CTS bit (and optional interrupt) is set when it is safe to send the next command. This command may only be sent when in powerup mode. Note that only the POWER_UP command is accepted in powerdown mode. If the system controller writes a command other than POWER_UP when in powerdown mode, the device does not respond. The device will only respond when a POWER_UP command is written. GPO pins are powered down and not active during this state. For optimal power down current, GPO2 must be either internally driven low through GPIO_CTL command or externally driven low.
+Note: In FMTX component 1.0 and 2.0, a reset is required when the system controller writes a command other than POWER_UP when in powerdown mode.
+Note: The following describes the state of all the pins when in powerdown mode: GPIO1, GPIO2, and GPIO3 = 0
+DIN, DFS, RIN, LIN = HiZ''', 
+arguments = [], 
+responses = []))
+
+	commands.append(Command(name = 'SET_PROPERTY', code = 18, 
+description = '''Sets a property shown in Table 5, ¡§FM Transmitter Property Summary,¡¨ on page 8. The CTS bit (and optional interrupt) is set when it is safe to send the next command. This command may only be sent when in powerup mode.
+See Figure 30, ¡§CTS and SET_PROPERTY Command Complete tCOMP Timing Model,¡¨ on page 244 and    Table 48, ¡§Command Timing Parameters for the FM Transmitter,¡¨ on page 245.''', 
+arguments = 	 [
+	Register(name = 'SET_PROPERTY_argument_1', address = 1, 
+elements = [Element(name = 'Reserved_0', idx_lowest_bit = 0, n_bits = 8, value = 0, read_only = True,
+description = '''Always write to 0.'''), 
+], default_value = 0), 
+	Register(name = 'SET_PROPERTY_argument_2', address = 2, 
+elements = [Element(name = 'PROPH', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Property High Byte.
+This byte in combination with PROPL is used to specify the property to modify. See Section ""5.1.2. FM/RDS Transmitter Properties"" on page 31.'''), 
+], default_value = 0), 
+	Register(name = 'SET_PROPERTY_argument_3', address = 3, 
+elements = [Element(name = 'PROPL', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Property Low Byte.
+This byte in combination with PROPH is used to specify the property to modify. See Section ""5.1.2. FM/RDS Transmitter Properties"" on page 31.'''), 
+], default_value = 0), 
+	Register(name = 'SET_PROPERTY_argument_4', address = 4, 
+elements = [Element(name = 'PROPDH', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Property Value High Byte.
+This byte in combination with PROPVL is used to set the property value. See Section ""5.1.2. FM/RDS Transmitter Properties"" on page 31.'''), 
+], default_value = 0), 
+	Register(name = 'SET_PROPERTY_argument_5', address = 5, 
+elements = [Element(name = 'PROPDL', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Property Value Low Byte.
+This byte in combination with PROPVH is used to set the property value. See Section ""5.1.2. FM/RDS Transmitter Properties"" on page 31.
+
+'''), 
+], default_value = 0)], 
+responses = []))
+
+	commands.append(Command(name = 'GET_PROPERTY', code = 19, 
+description = '''Gets a property shown in Table 5, ¡§FM Transmitter Property Summary,¡¨ on page 8. The CTS bit (and optional interrupt) is set when it is safe to send the next command. This command may only be sent when in powerup mode.''', 
+arguments = 	 [
+	Register(name = 'GET_PROPERTY_argument_1', address = 1, 
+elements = [Element(name = 'Reserved_0', idx_lowest_bit = 0, n_bits = 8, value = 0, read_only = True,
+description = '''Always write to 0.'''), 
+], default_value = 0), 
+	Register(name = 'GET_PROPERTY_argument_2', address = 2, 
+elements = [Element(name = 'PROPH', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Property Get High Byte.
+This byte in combination with PROPL is used to specify the property to get.'''), 
+], default_value = 0), 
+	Register(name = 'GET_PROPERTY_argument_3', address = 3, 
+elements = [Element(name = 'PROPL', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Property Get Low Byte.
+This byte in combination with PROPH is used to specify the property to get.'''), 
+], default_value = 0)], 
+responses = 	 [
+	Register(name = 'GET_PROPERTY_response_1', address = 1, 
+elements = [Element(name = 'Reserved_0', idx_lowest_bit = 0, n_bits = 8, value = 0, read_only = True,
+description = '''Reserved, various values.'''), 
+], default_value = 0), 
+	Register(name = 'GET_PROPERTY_response_2', address = 2, 
+elements = [Element(name = 'PROPDH', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Property Value High Byte.
+This byte in combination with PROPVL will represent the requested prop- erty value.'''), 
+], default_value = 0), 
+	Register(name = 'GET_PROPERTY_response_3', address = 3, 
+elements = [Element(name = 'PROPDL', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Property Value High Byte.
+This byte in combination with PROPVH will represent the requested prop- erty value.
+
+
+
+'''), 
+], default_value = 0)]))
+
+	commands.append(Command(name = 'GET_INT_STATUS', code = 20, 
+description = '''Updates bits 6:0 of the status byte. This command should be called after any command that sets the STCINT, ASQINT, or RDSINT bits. When polling this command should be periodically called to monitor the STATUS byte, and when using interrupts, this command should be called after the interrupt is set to update the STATUS byte. The command is complete when the CTS bit (and optional interrupt) is set. This command may only be sent when in powerup mode.''', 
+arguments = [], 
+responses = []))
+
+	commands.append(Command(name = 'TX_TUNE_FREQ', code = 48, 
+description = '''Sets the state of the RF carrier and sets the tuning frequency between 76 and 108 MHz in 10 kHz units and steps of 50 kHz. For example 76.05 MHz = 7605 is valid because it follows the 50 kHz step requirement but
+76.01 MHz = 7601 is not valid. The CTS bit (and optional interrupt) is set when it is safe to send the next command. The ERR bit (and optional interrupt) is set if an invalid argument is sent. Note that only a single interrupt occurs if both the CTS and ERR bits are set. The optional STC interrupt is set when the command completes. The STCINT bit is set only after the GET_INT_STATUS command is called. This command may only be sent when in powerup mode. The command clears the STC bit if it is already set. See Figure 29, ¡§CTS and STC Timing Model,¡¨ on page 244 and Table 48, ¡§Command Timing Parameters for the FM Transmitter,¡¨ on page 245.''', 
+arguments = 	 [
+	Register(name = 'TX_TUNE_FREQ_argument_1', address = 1, 
+elements = [Element(name = 'Reserved_0', idx_lowest_bit = 0, n_bits = 8, value = 0, read_only = True,
+description = '''Always write to 0.'''), 
+], default_value = 0), 
+	Register(name = 'TX_TUNE_FREQ_argument_2', address = 2, 
+elements = [Element(name = 'FREQH', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Tune Frequency High Byte.
+This byte in combination with FREQL selects the tune frequency in units of 10 kHz. The valid range is from 7600 to 10800 (76¡V108 MHz). The frequency must be a multiple of 50 kHz.'''), 
+], default_value = 0), 
+	Register(name = 'TX_TUNE_FREQ_argument_3', address = 3, 
+elements = [Element(name = 'FREQL', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Tune Frequency Low Byte.
+This byte in combination with FREQH selects the tune frequency in units of 10 kHz. The valid range is from 7600 to 10800 (76¡V108 MHz). The frequency must be a multiple of 50 kHz.
+
+'''), 
+], default_value = 0)], 
+responses = []))
+
+	commands.append(Command(name = 'TX_TUNE_POWER', code = 49, 
+description = '''Sets the RF voltage level between 88 dB£gV and 115 dB£gV in 1 dB units. Power may be set as high as 120 dB£gV; however, voltage accuracy is not guaranteed. A value of 0x00 indicates off. The command also sets the antenna tuning capacitance. A value of 0 indicates autotuning, and a value of 1¡V191 indicates a manual override. The CTS bit (and optional interrupt) is set when it is safe to send the next command. The ERR bit (and optional interrupt) is set if an invalid argument is sent. Note that only a single interrupt occurs if both the CTS and ERR bits are set. The optional STC interrupt is set when the command completes. The STCINT bit is set only after the GET_INT_STATUS command is called. This command may only be sent when in powerup mode. The command clears the STC bit if it is already set. See Figure 29, ¡§CTS and STC Timing Model,¡¨ on page 244 and Table 48, ¡§Command Timing Parameters for the FM Transmitter,¡¨ on page 245.''', 
+arguments = 	 [
+	Register(name = 'TX_TUNE_POWER_argument_1', address = 1, 
+elements = [Element(name = 'Reserved_0', idx_lowest_bit = 0, n_bits = 8, value = 0, read_only = True,
+description = '''Always write to 0.'''), 
+], default_value = 0), 
+	Register(name = 'TX_TUNE_POWER_argument_2', address = 2, 
+elements = [Element(name = 'Reserved_0', idx_lowest_bit = 0, n_bits = 8, value = 0, read_only = True,
+description = '''Always write to 0.'''), 
+], default_value = 0), 
+	Register(name = 'TX_TUNE_POWER_argument_3', address = 3, 
+elements = [Element(name = 'RFdB£gV', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Tune Power Byte.
+Sets the tune power in dB£gV in 1 dB steps. The valid range is from 88¡V 115 dB£gV. Power may be set as high as 120 dB£gV; however, voltage accu- racy is not guaranteed.'''), 
+], default_value = 0), 
+	Register(name = 'TX_TUNE_POWER_argument_4', address = 4, 
+elements = [Element(name = 'ANTCAP', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Antenna Tuning Capacitor.
+This selects the value of the antenna tuning capacitor manually, or automati- cally if set to zero. The valid range is 0 to 191, which results in a tuning capacitance of 0.25 pF x ANTCAP.
+
+'''), 
+], default_value = 0)], 
+responses = []))
+
+	commands.append(Command(name = 'TX_TUNE_MEASURE', code = 50, 
+description = '''Enters receive mode (disables transmitter output power) and measures the received noise level (RNL) in units of dB£gV on the selected frequency. The command sets the tuning frequency between 76 and 108 MHz in 10 kHz units and steps of 50 kHz. For example 76.05 MHz = 7605 is valid because it follows the 50 kHz step requirement but 76.01 MHz = 7601 is not valid. The command also sets the antenna tuning capacitance. A value of 0 indicates autotuning, and a value of 1¡V191 indicates a manual override. The CTS bit (and optional interrupt) is set when it is safe to send the next command. The ERR bit (and optional interrupt) is set if an invalid argument is sent. Note that only a single interrupt occurs if both the CTS and ERR bits are set. The optional STC interrupt is set when the command completes. The STCINT bit is set only after the GET_INT_STATUS command is called. This command may only be sent when in powerup mode. The command clears the STC bit if it is already set. See Figure 29, ¡§CTS and STC Timing Model,¡¨ on page 244 and Table 48, ¡§Command Timing Parameters for the FM Transmitter,¡¨ on page 245.''', 
+arguments = 	 [
+	Register(name = 'TX_TUNE_MEASURE_argument_1', address = 1, 
+elements = [Element(name = 'Reserved_0', idx_lowest_bit = 0, n_bits = 8, value = 0, read_only = True,
+description = '''Always write to 0.'''), 
+], default_value = 0), 
+	Register(name = 'TX_TUNE_MEASURE_argument_2', address = 2, 
+elements = [Element(name = 'FREQH', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Tune Frequency High Byte.
+This byte in combination with FREQL selects the tune frequency in units of 10 kHz. In FM mode the valid range is from 7600 to 10800 (76¡V108 MHz). The frequency must be a multiple of 50 kHz.'''), 
+], default_value = 0), 
+	Register(name = 'TX_TUNE_MEASURE_argument_3', address = 3, 
+elements = [Element(name = 'FREQL', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Tune Frequency Low Byte.
+This byte in combination with FREQH selects the tune frequency in units of 10 kHz. In FM mode the valid range is from 7600 to 10800 (76¡V108 MHz). The frequency must be a multiple of 50 kHz.'''), 
+], default_value = 0), 
+	Register(name = 'TX_TUNE_MEASURE_argument_4', address = 4, 
+elements = [Element(name = 'ANTCAP', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Antenna Tuning Capacitor.
+This selects the value of the antenna tuning capacitor manually, or auto- matic if set to zero. The valid range is 0¡V191.
+
+'''), 
+], default_value = 0)], 
+responses = []))
+
+	commands.append(Command(name = 'TX_TUNE_STATUS', code = 51, 
+description = '''Returns the status of the TX_TUNE_FREQ, TX_TUNE_MEASURE, or TX_TUNE_POWER commands. The command returns the current frequency, output voltage in dB£gV (if applicable), the antenna tuning capacitance value (0¡V191) and the received noise level (if applicable). The command clears the STCINT interrupt bit when INTACK bit of ARG1 is set. The CTS bit (and optional interrupt) is set when it is safe to send the next command. This command may only be sent when in powerup mode.''', 
+arguments = 	 [
+	Register(name = 'TX_TUNE_STATUS_argument_1', address = 1, 
+elements = [Element(name = 'Reserved_1', idx_lowest_bit = 1, n_bits = 7, value = 0, read_only = True,
+description = '''Always write to 0.'''), 
+Element(name = 'INTACK', idx_lowest_bit = 0, n_bits = 1, value = 0, 
+description = '''Seek/Tune Interrupt Clear.
+If set this bit clears the seek/tune complete interrupt status indicator.'''), 
+], default_value = 0)], 
+responses = 	 [
+	Register(name = 'TX_TUNE_STATUS_response_1', address = 1, 
+elements = [Element(name = 'Reserved_0', idx_lowest_bit = 0, n_bits = 8, value = 0, read_only = True,
+description = '''Returns various data.'''), 
+], default_value = 0), 
+	Register(name = 'TX_TUNE_STATUS_response_2', address = 2, 
+elements = [Element(name = 'READFREQH', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Read Frequency High Byte.
+This byte in combination with READFREQL returns frequency being tuned.'''), 
+], default_value = 0), 
+	Register(name = 'TX_TUNE_STATUS_response_3', address = 3, 
+elements = [Element(name = 'READFREQL', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Read Frequency Low Byte.
+This byte in combination with READFREQH returns frequency being tuned.'''), 
+], default_value = 0), 
+	Register(name = 'TX_TUNE_STATUS_response_4', address = 4, 
+elements = [Element(name = 'Reserved_0', idx_lowest_bit = 0, n_bits = 8, value = 0, read_only = True,
+description = '''Returns various data.'''), 
+], default_value = 0), 
+	Register(name = 'TX_TUNE_STATUS_response_5', address = 5, 
+elements = [Element(name = 'READRFdB£gV', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Read Power.
+Returns the transmit output voltage setting.'''), 
+], default_value = 0), 
+	Register(name = 'TX_TUNE_STATUS_response_6', address = 6, 
+elements = [Element(name = 'READANTCAP', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Read Antenna Tuning Capacitor.
+This byte will contain the current antenna tuning capacitor value.'''), 
+], default_value = 0), 
+	Register(name = 'TX_TUNE_STATUS_response_7', address = 7, 
+elements = [Element(name = 'RNL', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Read Received Noise Level (Si4712/13 Only).
+This byte will contain the receive level as the response to a TX Tune Mea- sure command. The returned value will be the last RNL measurement (or 0 if no measurement has been performed) for the TX Tune Freq and TX Tune Power commands.
+
+'''), 
+], default_value = 0)]))
+
+	commands.append(Command(name = 'TX_ASQ_STATUS', code = 52, 
+description = '''Returns status information about the audio signal quality and current FM transmit frequency. This command can be used to check if the input audio stream is below a low threshold as reported by the IALL bit, or above a high threshold as reported by the IALH bit. The thresholds can be configured to detect a silence condition or an activity condition which can then be used by the host to take an appropriate action such as turning off the carrier in the case of prolonged silence. The thresholds are set using the TX_ASQ_LEVEL_LOW and TX_ASQ_LEVEL_HIGH properties. The audio must be above or below the threshold for greater than the amount of time specified in the TX_ASQ_DURATION_LOW and TX_ASQ_DURATION_HIGH properties for the status to be detected. Additionally the command can be used to determine if an overmodulation condition has occurred or the limiter has engaged, as reported by the OVERMOD bit, in which case the host could reduce the audio level to the part. If any of the OVERMOD, IALH, or IALL bits are set, the ASQINT bit will also be set. The ASQINT bit can be routed to a hardware interrupt via the GPO_IEN property.
+Clearing the IALH or IALL interrupts will result in the TX_ASQ_DURATION_LOW or TX_ASQ_DURATION_HIGH counters being rearmed, respectively, to start another detection interval measurement. The command clears the ASQINT interrupt bit and OVERMOD, IALH, and IALL bits when the INTACK bit of ARG1 is set. The CTS bit (and optional interrupt) is set when it is safe to send the next command. This command may only be sent when in powerup mode.
+Note that the TX_ASQ_DURATION_LOW and TX_ASQ_DURATION_HIGH counters start and the TX_ASQ_STATUS command will only return valid data after a call to TX_TUNE_FREQ, TX_TUNE_POWER, or TX_TUNE_MEASURE.''', 
+arguments = 	 [
+	Register(name = 'TX_ASQ_STATUS_argument_1', address = 1, 
+elements = [Element(name = 'INTACK', idx_lowest_bit = 0, n_bits = 1, value = 0, 
+description = '''Interrupt Acknowledge.
+0 = Interrupt status preserved.
+1 = Clears ASQINT, OVERMOD, IALDH, and IALDL.'''), 
+], default_value = 0)], 
+responses = 	 [
+	Register(name = 'TX_ASQ_STATUS_response_1', address = 1, 
+elements = [Element(name = 'OVERMOD', idx_lowest_bit = 2, n_bits = 1, value = 0, 
+description = '''Overmodulation Detection.
+0 = Output signal is below requested modulation level. 
+1 = Output signal is above requested modulation level.'''), 
+Element(name = 'IALH', idx_lowest_bit = 1, n_bits = 1, value = 0, 
+description = '''Input Audio Level Threshold Detect High.
+0 = Input audio level high threshold not exceeded. 
+1 = Input audio level high threshold exceeded.'''), 
+Element(name = 'IALL', idx_lowest_bit = 0, n_bits = 1, value = 0, 
+description = '''Input Audio Level Threshold Detect Low.
+0 = Input audio level low threshold not exceeded.
+1 = Input audio level low threshold exceeded.'''), 
+], default_value = 0), 
+	Register(name = 'TX_ASQ_STATUS_response_2', address = 2, 
+elements = [Element(name = 'Reserved_0', idx_lowest_bit = 0, n_bits = 8, value = 0, read_only = True,
+description = '''Returns various values.'''), 
+], default_value = 0), 
+	Register(name = 'TX_ASQ_STATUS_response_3', address = 3, 
+elements = [Element(name = 'Reserved_0', idx_lowest_bit = 0, n_bits = 8, value = 0, read_only = True,
+description = '''Returns various values.'''), 
+], default_value = 0), 
+	Register(name = 'TX_ASQ_STATUS_response_4', address = 4, 
+elements = [Element(name = 'INLEVEL', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Input Audio Level.
+The current audio input level measured in dBfs (2s complement nota- tion).
+
+'''), 
+], default_value = 0)]))
+
+	commands.append(Command(name = 'TX_RDS_BUFF', code = 53, 
+description = '''Loads or clears the RDS group buffer FIFO or circular buffer and returns the FIFO status. The buffer can be allocated between the circular buffer and FIFO with the TX_RDS_FIFO_SIZE property. A common use case for the circular buffer is to broadcast group 2A radio text, and a common use case for the FIFO is to broadcast group 4A real time clock. The command clears the INTACK interrupt bit when the INTACK bit of ARG1 is set. The CTS bit (and optional interrupt) is set when it is safe to send the next command. This command may only be sent when in powerup mode.
+Note: TX_RDS_BUFF is supported in FMTX component 2.0 or later.''', 
+arguments = 	 [
+	Register(name = 'TX_RDS_BUFF_argument_1', address = 1, 
+elements = [Element(name = 'FIFO', idx_lowest_bit = 7, n_bits = 1, value = 0, 
+description = '''Operate on FIFO.
+If set, the command operates on the FIFO buffer. If cleared, the command operates on the circular buffer.'''), 
+Element(name = 'Reserved_3', idx_lowest_bit = 3, n_bits = 4, value = 0, read_only = True,
+description = '''Always write to 0.'''), 
+Element(name = 'LDBUFF', idx_lowest_bit = 2, n_bits = 1, value = 0, 
+description = '''Load RDS Group Buffer.
+If set, loads the RDS group buffer with RDSB, RDSC, and RDSD. Block A data is generated from the RDS_TX_PI property when the buffer is transmit- ted.'''), 
+Element(name = 'MTBUFF', idx_lowest_bit = 1, n_bits = 1, value = 0, 
+description = '''Empty RDS Group Buffer.
+If set, empties the RDS group buffer.'''), 
+Element(name = 'INTACK', idx_lowest_bit = 0, n_bits = 1, value = 0, 
+description = '''Clear RDS Group buffer interrupt.
+If set this bit clears the RDS group buffer interrupt indicator.'''), 
+], default_value = 0), 
+	Register(name = 'TX_RDS_BUFF_argument_2', address = 2, 
+elements = [Element(name = 'RDSBH', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''RDS Block B High Byte.
+This byte in combination with RDSBL sets the RDS block B data.'''), 
+], default_value = 0), 
+	Register(name = 'TX_RDS_BUFF_argument_3', address = 3, 
+elements = [Element(name = 'RDSBL', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''RDS Block B Low Byte.
+This byte in combination with RDSBH sets the RDS block B data.'''), 
+], default_value = 0), 
+	Register(name = 'TX_RDS_BUFF_argument_4', address = 4, 
+elements = [Element(name = 'RDSCH', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''RDS Block C High Byte.
+This byte in combination with RDSCL sets the RDS block C data.'''), 
+], default_value = 0), 
+	Register(name = 'TX_RDS_BUFF_argument_5', address = 5, 
+elements = [Element(name = 'RDSCL', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''RDS Block C Low Byte.
+This byte in combination with RDSCH sets the RDS block C data.'''), 
+], default_value = 0), 
+	Register(name = 'TX_RDS_BUFF_argument_6', address = 6, 
+elements = [Element(name = 'RDSDH', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''RDS Block D High Byte.
+This byte in combination with RDSDL sets the RDS block D data.'''), 
+], default_value = 0), 
+	Register(name = 'TX_RDS_BUFF_argument_7', address = 7, 
+elements = [Element(name = 'RDSDL', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''RDS Block D Low Byte.
+This byte in combination with RDSDH sets the RDS block D data.'''), 
+], default_value = 0)], 
+responses = 	 [
+	Register(name = 'TX_RDS_BUFF_response_1', address = 1, 
+elements = [Element(name = 'Reserved_5', idx_lowest_bit = 5, n_bits = 3, value = 0, read_only = True,
+description = '''Values may vary.'''), 
+Element(name = 'RDSPSXMIT', idx_lowest_bit = 4, n_bits = 1, value = 0, 
+description = '''Interrupt source: RDS PS Group has been transmitted.'''), 
+Element(name = 'CBUFXMIT', idx_lowest_bit = 3, n_bits = 1, value = 0, 
+description = '''Interrupt source: RDS Group has been transmitted from the FIFO buffer.'''), 
+Element(name = 'FIFOXMIT', idx_lowest_bit = 2, n_bits = 1, value = 0, 
+description = '''Interrupt source: RDS Group has been transmitted from the circular buffer.'''), 
+Element(name = 'CBUFWRAP', idx_lowest_bit = 1, n_bits = 1, value = 0, 
+description = '''Interrupt source: RDS Group Circular Buffer has wrapped.'''), 
+Element(name = 'FIFOMT', idx_lowest_bit = 0, n_bits = 1, value = 0, 
+description = '''Interrupt source: RDS Group FIFO Buffer is empty.'''), 
+], default_value = 0), 
+	Register(name = 'TX_RDS_BUFF_response_2', address = 2, 
+elements = [Element(name = 'CBAVAIL', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Returns the number of available Circular Buffer blocks.'''), 
+], default_value = 0), 
+	Register(name = 'TX_RDS_BUFF_response_3', address = 3, 
+elements = [Element(name = 'CBUSED', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Returns the number of used Circular Buffer blocks.'''), 
+], default_value = 0), 
+	Register(name = 'TX_RDS_BUFF_response_4', address = 4, 
+elements = [Element(name = 'FIFOAVAIL', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Returns the number of available FIFO blocks.'''), 
+], default_value = 0), 
+	Register(name = 'TX_RDS_BUFF_response_5', address = 5, 
+elements = [Element(name = 'FIFOUSED', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''Returns the number of used FIFO blocks.
+
+'''), 
+], default_value = 0)]))
+
+	commands.append(Command(name = 'TX_RDS_PS', code = 54, 
+description = '''Loads or clears the program service buffer. The CTS bit (and optional interrupt) is set when it is safe to send the next command. This command may only be sent when in powerup mode.
+Note: TX_RDS_PS is supported in FMTX component 2.0 or later.''', 
+arguments = 	 [
+	Register(name = 'TX_RDS_PS_argument_1', address = 1, 
+elements = [Element(name = 'Reserved_5', idx_lowest_bit = 5, n_bits = 3, value = 0, read_only = True,
+description = '''Always write to 0.'''), 
+Element(name = 'PSID', idx_lowest_bit = 0, n_bits = 5, value = 0, 
+description = '''Selects which PS data to load (0¡V23)
+0 = First 4 characters of PS0.
+1 = Last 4 characters of PS0.
+2 = First 4 characters of PS1.
+3 = Last 4 characters of PS1.
+22 = First 4 characters of PS11.
+23 = Last 4 characters of PS11.'''), 
+], default_value = 0), 
+	Register(name = 'TX_RDS_PS_argument_2', address = 2, 
+elements = [Element(name = 'PSCHAR0', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''RDS PSID CHAR0.
+First character of selected PSID.'''), 
+], default_value = 0), 
+	Register(name = 'TX_RDS_PS_argument_3', address = 3, 
+elements = [Element(name = 'PSCHAR1', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''RDS PSID CHAR1.
+Second character of selected PSID.'''), 
+], default_value = 0), 
+	Register(name = 'TX_RDS_PS_argument_4', address = 4, 
+elements = [Element(name = 'PSCHAR2', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''RDS PSID CHAR2.
+Third character of selected PSID.'''), 
+], default_value = 0), 
+	Register(name = 'TX_RDS_PS_argument_5', address = 5, 
+elements = [Element(name = 'PSCHAR3', idx_lowest_bit = 0, n_bits = 8, value = 0, 
+description = '''RDS PSID CHAR3.
+Fourth character of selected PSID.
+
+'''), 
+], default_value = 0)], 
+responses = []))
+
+	commands.append(Command(name = 'GPIO_CTL', code = 128, 
+description = '''Enables output for GPO1, 2, and 3. GPO1, 2, and 3 can be configured for output (Hi-Z or active drive) by setting the GPO1OEN, GPO2OEN, and GPO3OEN bit. The state (high or low) of GPO1, 2, and 3 is set with the GPIO_SET command. To avoid excessive current consumption due to oscillation, GPO pins should not be left in a high impedance state. The CTS bit (and optional interrupt) is set when it is safe to send the next command. This command may only be sent when in powerup mode. The default is all GPO pins set for high impedance.
+Notes:
+1. GPIO_CTL is fully supported in FMTX component 3.0 or later. Only bit GPO3OEN is supported in FMTX comp 2.0.
+2. The use of GPO2 as an interrupt pin and/or the use of GPO3 as DCLK digital clock input will override this GPIO_CTL function for GPO2 and/or GPO3 respectively.''', 
+arguments = 	 [
+	Register(name = 'GPIO_CTL_argument_1', address = 1, 
+elements = [Element(name = 'Reserved_4', idx_lowest_bit = 4, n_bits = 4, value = 0, read_only = True,
+description = '''Always write 0.'''), 
+Element(name = 'GPO3OEN', idx_lowest_bit = 3, n_bits = 1, value = 0, 
+description = '''GPO3 Output Enable.
+0 = Output Disabled (Hi-Z) (default). 
+1 = Output Enabled.'''), 
+Element(name = 'GPO2OEN', idx_lowest_bit = 2, n_bits = 1, value = 0, 
+description = '''GPO2 Output Enable.
+0 = Output Disabled (Hi-Z) (default). 
+1 = Output Enabled.'''), 
+Element(name = 'GPO1OEN', idx_lowest_bit = 1, n_bits = 1, value = 0, 
+description = '''GPO1 Output Enable.
+0 = Output Disabled (Hi-Z) (default). 
+1 = Output Enabled.'''), 
+Element(name = 'Reserved_0', idx_lowest_bit = 0, n_bits = 1, value = 0, read_only = True,
+description = '''Always write 0.
+
+'''), 
+], default_value = 0)], 
+responses = []))
+
+	commands.append(Command(name = 'GPIO_SET', code = 129, 
+description = '''Sets the output level (high or low) for GPO1, 2, and 3. GPO1, 2, and 3 can be configured for output by setting the GPO1OEN, GPO2OEN, and GPO3OEN bit in the GPIO_CTL command. To avoid excessive current consumption due to oscillation, GPO pins should not be left in a high impedance state. The CTS bit (and optional interrupt) is set when it is safe to send the next command. This property may only be set or read when in powerup mode. The default is all GPO pins set for high impedance.
+Note: GPIO_SET is fully-supported in FMTX comp 3.0 or later. Only bit GPO3LEVEL is supported in FMTX comp 2.0.''', 
+arguments = 	 [
+	Register(name = 'GPIO_SET_argument_1', address = 1, 
+elements = [Element(name = 'Reserved_4', idx_lowest_bit = 4, n_bits = 4, value = 0, read_only = True,
+description = '''Always write 0.'''), 
+Element(name = 'GPO3LEVEL', idx_lowest_bit = 3, n_bits = 1, value = 0, 
+description = '''GPO3 Output Level.
+0 = Output low (default). 
+1 = Output high.'''), 
+Element(name = 'GPO2LEVEL', idx_lowest_bit = 2, n_bits = 1, value = 0, 
+description = '''GPO3 Output Level.
+0 = Output low (default). 
+1 = Output high.'''), 
+Element(name = 'GPO1LEVEL', idx_lowest_bit = 1, n_bits = 1, value = 0, 
+description = '''GPO3 Output Level.
+0 = Output low (default). 
+1 = Output high.'''), 
+Element(name = 'Reserved_0', idx_lowest_bit = 0, n_bits = 1, value = 0, read_only = True,
+description = '''Always write 0.'''), 
+], default_value = 0)], 
+responses = []))
+
+	return commands
